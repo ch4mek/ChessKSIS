@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="CENTER" spacing="15" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.chess.client.gui.controller.RegisterController"
+      style="-fx-background-color: #2c2c2c; -fx-padding: 30;">
+
+    <Label text="♚ Register" style="-fx-font-size: 28px; -fx-text-fill: #f0d9b5; -fx-font-weight: bold;"/>
+    <Label text="Create a new account" style="-fx-font-size: 14px; -fx-text-fill: #aaaaaa;"/>
+
+    <VBox alignment="CENTER" spacing="10" maxWidth="300">
+        <Label text="Username:" style="-fx-text-fill: #cccccc;"/>
+        <TextField fx:id="usernameField" promptText="Choose a username"
+                   style="-fx-background-color: #3c3c3c; -fx-text-fill: white;"/>
+
+        <Label text="Password:" style="-fx-text-fill: #cccccc;"/>
+        <PasswordField fx:id="passwordField" promptText="Choose a password"
+                       style="-fx-background-color: #3c3c3c; -fx-text-fill: white;"/>
+
+        <Label text="Confirm Password:" style="-fx-text-fill: #cccccc;"/>
+        <PasswordField fx:id="confirmPasswordField" promptText="Confirm password"
+                       style="-fx-background-color: #3c3c3c; -fx-text-fill: white;"/>
+    </VBox>
+
+    <VBox alignment="CENTER" spacing="8" maxWidth="300">
+        <Button fx:id="registerButton" text="Create Account" onAction="#onRegister" maxWidth="Infinity"
+                style="-fx-background-color: #5a9e5a; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8 16;"/>
+        <Button text="Back to Login" onAction="#onBackToLogin" maxWidth="Infinity"
+                style="-fx-background-color: #555555; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8 16;"/>
+    </VBox>
+
+    <Label fx:id="statusLabel" style="-fx-text-fill: #ff6b6b; -fx-font-size: 12px;"/>
+</VBox>
