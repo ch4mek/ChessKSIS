@@ -134,6 +134,13 @@ public class ClientHandler implements Runnable {
         String password = msg.getParam(1);
         UserDAO.UserRecord user = server.getAuthService().login(username, password);
         if (user != null) {
+            // Check if this user is already logged in from another connection
+            ClientHandler existingHandler = loggedInUsers.get(user.id);
+            if (existingHandler != null && existingHandler != this) {
+                sendMessage(new Message(MessageType.AUTH_FAIL, "User '" + username + "' is already logged in from another connection"));
+                LOGGER.warning("Duplicate login attempt for user: " + username);
+                return;
+            }
             session = new PlayerSession(user.id, user.username, user.rating);
             registerHandler();
             sendMessage(new Message(MessageType.AUTH_OK, user.username, String.valueOf(user.rating)));
@@ -473,6 +480,9 @@ public class ClientHandler implements Runnable {
             if (session != null) {
                 LOGGER.info("Player disconnected: " + session.getUsername());
 
+                // Remove from logged-in users map
+                loggedInUsers.remove(session.getUserId(), this);
+
                 // Notify opponent
                 if (session.isInRoom()) {
                     GameRoom room = session.getCurrentRoom();
@@ -498,6 +508,10 @@ public class ClientHandler implements Runnable {
     private static final java.util.concurrent.ConcurrentHashMap<PlayerSession, ClientHandler> handlerMap
             = new java.util.concurrent.ConcurrentHashMap<>();
 
+    // Tracks logged-in users by userId to prevent duplicate sessions
+    private static final java.util.concurrent.ConcurrentHashMap<Integer, ClientHandler> loggedInUsers
+            = new java.util.concurrent.ConcurrentHashMap<>();
+
     public PlayerSession getSession() { return session; }
 
     /**
@@ -506,6 +520,7 @@ public class ClientHandler implements Runnable {
     private void registerHandler() {
         if (session != null) {
             handlerMap.put(session, this);
+            loggedInUsers.put(session.getUserId(), this);
         }
     }
 
