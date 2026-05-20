@@ -43,13 +43,24 @@ public class MessageReceiver implements Runnable {
                     continue; // Skip empty lines
                 }
 
+                // Parse the message — catch protocol/format errors separately
+                Message message;
                 try {
-                    Message message = Message.parse(line);
-                    LOGGER.fine("Received: " + message.serialize());
-                    connection.onMessageReceived(message);
+                    message = Message.parse(line);
                 } catch (Exception e) {
                     LOGGER.warning("Failed to parse message: " + line + " - " + e.getMessage());
                     connection.onError("Invalid message from server: " + line);
+                    continue;
+                }
+
+                LOGGER.fine("Received: " + message.serialize());
+
+                // Dispatch to listener — catch UI/handler bugs separately so they
+                // don't silently swallow game-critical messages like OPPONENT_MOVE
+                try {
+                    connection.onMessageReceived(message);
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Error handling message " + message.getType() + " in listener", e);
                 }
             }
         } catch (IOException e) {

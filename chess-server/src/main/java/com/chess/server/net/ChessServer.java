@@ -89,7 +89,7 @@ public class ChessServer {
             try {
                 Socket clientSocket = serverSocket.accept();
                 clientSocket.setTcpNoDelay(true); // Disable Nagle's algorithm for lower latency
-                clientSocket.setSoTimeout(0); // No read timeout (blocking reads)
+                clientSocket.setSoTimeout(60_000); // 60s read timeout — detect half-hung connections
 
                 String clientAddr = clientSocket.getInetAddress().getHostAddress();
                 int clientPort = clientSocket.getPort();

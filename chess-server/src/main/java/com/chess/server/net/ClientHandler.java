@@ -69,8 +69,14 @@ public class ClientHandler implements Runnable {
                     handleMessage(message);
                 } catch (ProtocolException e) {
                     sendMessage(new Message(MessageType.ERROR, "Invalid message: " + e.getMessage()));
+                } catch (RuntimeException e) {
+                    LOGGER.log(Level.WARNING, "Error processing message from " + getClientInfo() + ": " + rawMessage, e);
+                    sendMessage(new Message(MessageType.ERROR, "Invalid parameters: " + e.getMessage()));
                 }
             }
+        } catch (java.net.SocketTimeoutException e) {
+            // No data received within the SO_TIMEOUT window — client is likely dead
+            LOGGER.info("Client timeout (no data for 60s): " + getClientInfo());
         } catch (IOException e) {
             if (running) {
                 LOGGER.log(Level.INFO, "Client disconnected: " + getClientInfo(), e);
@@ -137,9 +143,19 @@ public class ClientHandler implements Runnable {
             // Check if this user is already logged in from another connection
             ClientHandler existingHandler = loggedInUsers.get(user.id);
             if (existingHandler != null && existingHandler != this) {
-                sendMessage(new Message(MessageType.AUTH_FAIL, "User '" + username + "' is already logged in from another connection"));
-                LOGGER.warning("Duplicate login attempt for user: " + username);
-                return;
+                // If the old handler's socket is closed, evict it and allow reconnection
+                if (existingHandler.clientSocket.isClosed()) {
+                    LOGGER.info("Evicting dead session for user: " + username);
+                    existingHandler.running = false;
+                    loggedInUsers.remove(user.id, existingHandler);
+                    if (existingHandler.session != null) {
+                        handlerMap.remove(existingHandler.session);
+                    }
+                } else {
+                    sendMessage(new Message(MessageType.AUTH_FAIL, "User '" + username + "' is already logged in from another connection"));
+                    LOGGER.warning("Duplicate login attempt for user: " + username);
+                    return;
+                }
             }
             session = new PlayerSession(user.id, user.username, user.rating);
             registerHandler();
@@ -185,14 +201,23 @@ public class ClientHandler implements Runnable {
             sendMessage(new Message(MessageType.ROOM_LIST));
             return;
         }
-        String[] params = new String[rooms.size() * 4];
-        for (int i = 0; i < rooms.size(); i++) {
-            GameRoom room = rooms.get(i);
-            params[i * 4] = room.getRoomId();
-            params[i * 4 + 1] = room.getWhitePlayer().getUsername();
-            params[i * 4 + 2] = "1"; // player count (host is already in)
-            params[i * 4 + 3] = room.getState().name();
+        // Build room list safely — rooms may be modified by other threads between
+        // getAvailableRooms() and accessing room fields
+        java.util.List<String> paramList = new java.util.ArrayList<>();
+        for (GameRoom room : rooms) {
+            PlayerSession host = room.getWhitePlayer();
+            if (host != null && room.getState() == RoomState.WAITING) {
+                paramList.add(room.getRoomId());
+                paramList.add(host.getUsername());
+                paramList.add("1"); // player count (host is already in)
+                paramList.add(room.getState().name());
+            }
         }
+        if (paramList.isEmpty()) {
+            sendMessage(new Message(MessageType.ROOM_LIST));
+            return;
+        }
+        String[] params = paramList.toArray(new String[0]);
         sendMessage(new Message(MessageType.ROOM_LIST, params));
     }
 
@@ -437,6 +462,14 @@ public class ClientHandler implements Runnable {
     public synchronized void sendMessage(Message msg) {
         if (out != null && !clientSocket.isClosed()) {
             out.println(msg.serialize());
+            if (out.checkError()) {
+                LOGGER.warning("Write error detected for " + getClientInfo() + " — client likely disconnected");
+                running = false;
+                try {
+                    clientSocket.close();
+                } catch (IOException ignored) {
+                }
+            }
         }
     }
 
@@ -483,14 +516,20 @@ public class ClientHandler implements Runnable {
                 // Remove from logged-in users map
                 loggedInUsers.remove(session.getUserId(), this);
 
-                // Notify opponent
+                // Handle active game — opponent wins by disconnect
                 if (session.isInRoom()) {
                     GameRoom room = session.getCurrentRoom();
-                    PlayerSession opponent = room.getOpponent(session);
-                    if (opponent != null) {
-                        sendToPlayer(opponent, new Message(MessageType.OPPONENT_DISCONNECTED));
+                    if (room.getState() == RoomState.PLAYING && room.isFull()) {
+                        // Active game in progress — opponent wins
+                        GameColor disconnectingColor = session.getAssignedColor();
+                        GameStatus status = (disconnectingColor == GameColor.WHITE)
+                                ? GameStatus.BLACK_WINS_DISCONNECT
+                                : GameStatus.WHITE_WINS_DISCONNECT;
+                        handleGameOver(room, status);
+                    } else {
+                        // Room in WAITING state or not full — just clean up
+                        server.getGameManager().removePlayerFromRooms(session);
                     }
-                    server.getGameManager().removePlayerFromRooms(session);
                 }
             }
 

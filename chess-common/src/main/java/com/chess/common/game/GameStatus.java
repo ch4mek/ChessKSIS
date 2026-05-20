@@ -15,7 +15,9 @@ public enum GameStatus {
     WHITE_WINS_RESIGN,
     BLACK_WINS_RESIGN,
     WHITE_WINS_TIMEOUT,
-    BLACK_WINS_TIMEOUT;
+    BLACK_WINS_TIMEOUT,
+    WHITE_WINS_DISCONNECT,
+    BLACK_WINS_DISCONNECT;
 
     /**
      * @return true if the game is over (any terminal state)
@@ -35,13 +37,13 @@ public enum GameStatus {
      * @return true if white wins
      */
     public boolean isWhiteWins() {
-        return this == WHITE_WINS || this == WHITE_WINS_RESIGN || this == WHITE_WINS_TIMEOUT;
+        return this == WHITE_WINS || this == WHITE_WINS_RESIGN || this == WHITE_WINS_TIMEOUT || this == WHITE_WINS_DISCONNECT;
     }
 
     /**
      * @return true if black wins
      */
     public boolean isBlackWins() {
-        return this == BLACK_WINS || this == BLACK_WINS_RESIGN || this == BLACK_WINS_TIMEOUT;
+        return this == BLACK_WINS || this == BLACK_WINS_RESIGN || this == BLACK_WINS_TIMEOUT || this == BLACK_WINS_DISCONNECT;
     }
 }

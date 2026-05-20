@@ -5,6 +5,9 @@ import com.chess.common.protocol.MessageType;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,12 +16,17 @@ import java.util.logging.Logger;
  * Manages the TCP connection to the chess server.
  * Provides methods to connect, disconnect, and send messages.
  * Uses a background thread (MessageReceiver) to listen for incoming messages.
+ * <p>
+ * Includes a heartbeat mechanism: sends PING every 15 seconds.
+ * If no PONG is received within 45 seconds, the connection is considered dead.
  */
 public class ServerConnection {
 
     private static final Logger LOGGER = Logger.getLogger(ServerConnection.class.getName());
     private static final int DEFAULT_PORT = 5555;
     private static final int CONNECTION_TIMEOUT = 10000; // 10 seconds
+    private static final int PING_INTERVAL_SEC = 15;
+    private static final int PONG_TIMEOUT_MS = 45_000;
 
     private Socket socket;
     private BufferedReader reader;
@@ -26,6 +34,10 @@ public class ServerConnection {
     private MessageReceiver receiver;
     private final AtomicBoolean connected = new AtomicBoolean(false);
     private MessageListener listener;
+
+    // Heartbeat state
+    private volatile long lastPongTime;
+    private ScheduledExecutorService heartbeatExecutor;
 
     /**
      * Connects to the chess server at the specified host and port.
@@ -55,6 +67,15 @@ public class ServerConnection {
         receiverThread.setDaemon(true);
         receiverThread.start();
 
+        // Start heartbeat
+        lastPongTime = System.currentTimeMillis();
+        heartbeatExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "Heartbeat");
+            t.setDaemon(true);
+            return t;
+        });
+        heartbeatExecutor.scheduleAtFixedRate(this::sendHeartbeat, PING_INTERVAL_SEC, PING_INTERVAL_SEC, TimeUnit.SECONDS);
+
         LOGGER.info("Connected to " + host + ":" + port);
     }
 
@@ -77,6 +98,12 @@ public class ServerConnection {
         }
 
         LOGGER.info("Disconnecting from server...");
+
+        // Stop heartbeat
+        if (heartbeatExecutor != null) {
+            heartbeatExecutor.shutdownNow();
+            heartbeatExecutor = null;
+        }
 
         // Stop the receiver thread
         if (receiver != null) {
@@ -163,11 +190,16 @@ public class ServerConnection {
 
     /**
      * Called by MessageReceiver when a message is received.
-     * Dispatches to the registered listener.
+     * Intercepts PONG for heartbeat tracking, then dispatches to the registered listener.
      *
      * @param message the received message
      */
     void onMessageReceived(Message message) {
+        if (message.getType() == MessageType.PONG) {
+            lastPongTime = System.currentTimeMillis();
+            LOGGER.fine("PONG received — connection alive");
+            return; // Heartbeat response, don't forward to UI listener
+        }
         if (listener != null) {
             listener.onMessageReceived(message);
         }
@@ -178,6 +210,10 @@ public class ServerConnection {
      */
     void onConnectionLost() {
         if (connected.getAndSet(false)) {
+            if (heartbeatExecutor != null) {
+                heartbeatExecutor.shutdownNow();
+                heartbeatExecutor = null;
+            }
             if (listener != null) {
                 listener.onConnectionLost();
             }
@@ -192,6 +228,29 @@ public class ServerConnection {
     void onError(String error) {
         if (listener != null) {
             listener.onError(error);
+        }
+    }
+
+    /**
+     * Heartbeat task: sends PING and checks for PONG timeout.
+     * Runs periodically every PING_INTERVAL_SEC seconds.
+     */
+    private void sendHeartbeat() {
+        try {
+            if (!connected.get()) return;
+
+            long elapsed = System.currentTimeMillis() - lastPongTime;
+            if (elapsed > PONG_TIMEOUT_MS) {
+                LOGGER.warning("No PONG received for " + (elapsed / 1000) + "s — connection dead");
+                onConnectionLost();
+                return;
+            }
+
+            sendMessage(new Message(MessageType.PING));
+            LOGGER.fine("PING sent");
+        } catch (IOException e) {
+            LOGGER.warning("Failed to send PING: " + e.getMessage());
+            onConnectionLost();
         }
     }
 }

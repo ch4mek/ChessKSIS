@@ -104,7 +104,7 @@ public class GameManager {
      */
     public synchronized String buildRoomListString() {
         return rooms.values().stream()
-                .filter(r -> r.getState() == RoomState.WAITING)
+                .filter(r -> r.getState() == RoomState.WAITING && r.getWhitePlayer() != null)
                 .map(r -> r.getRoomId() + ":" + r.getWhitePlayer().getUsername() + ":" + r.getState().name().toLowerCase())
                 .collect(Collectors.joining(";"));
     }
