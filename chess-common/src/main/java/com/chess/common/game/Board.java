@@ -551,6 +551,7 @@ public class Board {
         List<Move> legalMoves = getLegalMoves(currentTurn);
         boolean isLegal = false;
         Move legalMove = null;
+        Move fallbackPromotion = null; // fallback: queen promotion if client didn't specify
         for (Move legal : legalMoves) {
             if (legal.getFrom().equals(move.getFrom()) && legal.getTo().equals(move.getTo())) {
                 // For promotion moves, also check promotion piece
@@ -565,7 +566,17 @@ public class Board {
                     legalMove = legal;
                     break;
                 }
+                // Remember first promotion move (QUEEN) as fallback for non-promotion move to promotion row
+                if (!move.isPromotion() && legal.isPromotion() && fallbackPromotion == null) {
+                    fallbackPromotion = legal;
+                }
             }
+        }
+
+        // If no exact match but pawn reaches promotion row without specifying piece, default to queen
+        if (!isLegal && fallbackPromotion != null) {
+            isLegal = true;
+            legalMove = fallbackPromotion;
         }
 
         if (!isLegal) {
@@ -575,12 +586,13 @@ public class Board {
         // Detect capture before executing the move
         boolean isCapture = getPiece(legalMove.getTo()) != null || legalMove.isEnPassant();
         Piece movedPiece = getPiece(legalMove.getFrom());
+        Piece capturedPiece = getPiece(legalMove.getTo()); // save before executeMove overwrites
 
         // Execute the move
         executeMove(legalMove);
 
         // Update game state
-        updateCastlingRights(legalMove);
+        updateCastlingRights(legalMove, capturedPiece);
         updateEnPassantTarget(legalMove);
         updateMoveCounters(movedPiece, isCapture);
 
@@ -640,12 +652,11 @@ public class Board {
         }
     }
 
-    private void updateCastlingRights(Move move) {
+    private void updateCastlingRights(Move move, Piece capturedPiece) {
         Piece piece = getPiece(move.getTo()); // piece already moved to destination
-        if (piece == null) return;
 
-        // King moved - lose both castling rights
-        if (piece.getType() == PieceType.KING) {
+        // King moved - lose all castling rights for that color
+        if (piece != null && piece.getType() == PieceType.KING) {
             if (piece.getColor() == GameColor.WHITE) {
                 whiteKingSideCastle = false;
                 whiteQueenSideCastle = false;
@@ -655,8 +666,8 @@ public class Board {
             }
         }
 
-        // Rook moved or captured - lose that side's castling right
-        if (piece.getType() == PieceType.ROOK) {
+        // Rook moved from its starting square - lose that side's castling right
+        if (piece != null && piece.getType() == PieceType.ROOK) {
             if (piece.getColor() == GameColor.WHITE) {
                 if (move.getFrom().equals(new Position(7, 0))) whiteQueenSideCastle = false;
                 if (move.getFrom().equals(new Position(7, 7))) whiteKingSideCastle = false;
@@ -666,15 +677,16 @@ public class Board {
             }
         }
 
-        // Rook captured - lose that side's castling right
-        if (move.getFrom().equals(new Position(7, 0)) || move.getTo().equals(new Position(7, 0)))
-            whiteQueenSideCastle = false;
-        if (move.getFrom().equals(new Position(7, 7)) || move.getTo().equals(new Position(7, 7)))
-            whiteKingSideCastle = false;
-        if (move.getFrom().equals(new Position(0, 0)) || move.getTo().equals(new Position(0, 0)))
-            blackQueenSideCastle = false;
-        if (move.getFrom().equals(new Position(0, 7)) || move.getTo().equals(new Position(0, 7)))
-            blackKingSideCastle = false;
+        // Rook captured on its starting square - lose that side's castling right
+        if (capturedPiece != null && capturedPiece.getType() == PieceType.ROOK) {
+            if (capturedPiece.getColor() == GameColor.WHITE) {
+                if (move.getTo().equals(new Position(7, 0))) whiteQueenSideCastle = false;
+                if (move.getTo().equals(new Position(7, 7))) whiteKingSideCastle = false;
+            } else {
+                if (move.getTo().equals(new Position(0, 0))) blackQueenSideCastle = false;
+                if (move.getTo().equals(new Position(0, 7))) blackKingSideCastle = false;
+            }
+        }
     }
 
     private void updateEnPassantTarget(Move move) {
@@ -837,10 +849,23 @@ public class Board {
 
     /**
      * Checks if the path between two positions is clear (for sliding pieces).
+     * Requires a straight line (horizontal, vertical, or diagonal).
+     * Returns false for invalid geometry to prevent infinite loops.
      */
     private boolean isPathClear(Position from, Position to) {
         int dr = Integer.signum(to.getRow() - from.getRow());
         int dc = Integer.signum(to.getCol() - from.getCol());
+
+        // Same square — nothing in the path
+        if (dr == 0 && dc == 0) return true;
+
+        // Must be a straight line: either same row, same col, or diagonal (equal abs delta)
+        int rowDelta = Math.abs(to.getRow() - from.getRow());
+        int colDelta = Math.abs(to.getCol() - from.getCol());
+        if (rowDelta != colDelta && rowDelta != 0 && colDelta != 0) {
+            return false; // Not a valid sliding piece direction
+        }
+
         int r = from.getRow() + dr;
         int c = from.getCol() + dc;
         while (r != to.getRow() || c != to.getCol()) {
@@ -948,7 +973,13 @@ public class Board {
      * Includes piece positions, turn, castling rights, and en passant.
      */
     private String getPositionKey() {
-        return toFEN();
+        String fen = toFEN();
+        // Only use first 4 FEN fields for position comparison:
+        // piece placement + active color + castling rights + en passant
+        // Exclude halfMoveClock and fullMoveNumber — they change every move
+        // and would prevent threefold repetition detection
+        String[] parts = fen.split(" ");
+        return parts[0] + " " + parts[1] + " " + parts[2] + " " + parts[3];
     }
 
     /**

@@ -15,7 +15,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 /**
@@ -55,10 +57,11 @@ public class ChessBoardWidget extends GridPane {
         /**
          * Called when a move is attempted.
          *
-         * @param from source position
-         * @param to   destination position
+         * @param from           source position
+         * @param to             destination position
+         * @param promotionPiece the piece type to promote to, or null if not a promotion
          */
-        void onMove(Position from, Position to);
+        void onMove(Position from, Position to, PieceType promotionPiece);
     }
 
     public ChessBoardWidget() {
@@ -206,7 +209,18 @@ public class ChessBoardWidget extends GridPane {
             if (legalMovePositions.contains(clickedPos)) {
                 // Make the move
                 if (moveCallback != null) {
-                    moveCallback.onMove(selectedPosition, clickedPos);
+                    Piece selectedPiece = board.getPiece(selectedPosition.getRow(), selectedPosition.getCol());
+                    PieceType promotionPiece = null;
+
+                    // Detect pawn promotion
+                    if (selectedPiece != null && selectedPiece.getType() == PieceType.PAWN) {
+                        int promotionRow = (selectedPiece.getColor() == GameColor.WHITE) ? 0 : 7;
+                        if (clickedPos.getRow() == promotionRow) {
+                            promotionPiece = showPromotionDialog(selectedPiece.getColor());
+                        }
+                    }
+
+                    moveCallback.onMove(selectedPosition, clickedPos, promotionPiece);
                 }
                 selectedPosition = null;
                 legalMovePositions.clear();
@@ -296,6 +310,40 @@ public class ChessBoardWidget extends GridPane {
             }
             setMouseTransparent(true);
         }
+    }
+
+    /**
+     * Shows a dialog for the user to choose a promotion piece.
+     *
+     * @param color the color of the promoting pawn (used for dialog title)
+     * @return the chosen piece type, defaults to QUEEN if dialog is dismissed
+     */
+    private PieceType showPromotionDialog(GameColor color) {
+        List<String> choices = Arrays.asList("Queen", "Rook", "Bishop", "Knight");
+        javafx.scene.control.ChoiceDialog<String> dialog = new javafx.scene.control.ChoiceDialog<>("Queen", choices);
+        dialog.setTitle("Pawn Promotion");
+        dialog.setHeaderText("Choose promotion piece:");
+        dialog.setContentText("Promote to:");
+
+        // Style the dialog
+        dialog.getDialogPane().setStyle(
+            "-fx-background-color: #312e2b; " +
+            "-fx-text-fill: #f0d9b5;"
+        );
+        dialog.getDialogPane().lookupButton(javafx.scene.control.ButtonType.OK).setStyle(
+            "-fx-background-color: #629924; -fx-text-fill: white;"
+        );
+
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            switch (result.get()) {
+                case "Rook":   return PieceType.ROOK;
+                case "Bishop": return PieceType.BISHOP;
+                case "Knight": return PieceType.KNIGHT;
+                default:       return PieceType.QUEEN;
+            }
+        }
+        return PieceType.QUEEN; // default if dialog is closed
     }
 
     /**

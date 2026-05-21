@@ -29,7 +29,7 @@ public class DatabaseManager {
      *
      * @throws SQLException if connection fails
      */
-    public void connect() throws SQLException {
+    public synchronized void connect() throws SQLException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
@@ -41,11 +41,13 @@ public class DatabaseManager {
 
     /**
      * Gets the active connection, reconnecting if necessary.
+     * Synchronized to prevent concurrent access to the single JDBC Connection
+     * from multiple ClientHandler threads.
      *
      * @return the database connection
      * @throws SQLException if connection fails
      */
-    public Connection getConnection() throws SQLException {
+    public synchronized Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
             connect();
         }

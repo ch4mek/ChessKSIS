@@ -6,6 +6,7 @@ import com.chess.client.net.MessageListener;
 import com.chess.client.net.ServerConnection;
 import com.chess.common.game.Board;
 import com.chess.common.model.GameColor;
+import com.chess.common.model.PieceType;
 import com.chess.common.model.Position;
 import com.chess.common.protocol.Message;
 import com.chess.common.protocol.MessageType;
@@ -108,12 +109,12 @@ public class GameController implements MessageListener {
         boardWidget.setBoard(board);
 
         // Set move callback
-        boardWidget.setMoveCallback((from, to) -> {
+        boardWidget.setMoveCallback((from, to, promotionPiece) -> {
             if (!myTurn || gameOver) {
                 statusLabel.setText("It's not your turn!");
                 return;
             }
-            sendMove(from, to);
+            sendMove(from, to, promotionPiece);
         });
 
         moveHistory.clear();
@@ -135,12 +136,16 @@ public class GameController implements MessageListener {
         }
     }
 
-    private void sendMove(Position from, Position to) {
+    private void sendMove(Position from, Position to, PieceType promotionPiece) {
         String fromStr = from.toAlgebraic();
         String toStr = to.toAlgebraic();
 
         try {
-            connection.sendMessage(new Message(MessageType.MOVE, fromStr, toStr));
+            if (promotionPiece != null) {
+                connection.sendMessage(new Message(MessageType.MOVE, fromStr, toStr, promotionPiece.name()));
+            } else {
+                connection.sendMessage(new Message(MessageType.MOVE, fromStr, toStr));
+            }
             statusLabel.setText("Sending move...");
             boardWidget.clearSelection();
         } catch (IOException e) {
@@ -281,10 +286,11 @@ public class GameController implements MessageListener {
 
     private void handleMoveOk(Message message) {
         // Our move was accepted by the server
-        // Server sends: MOVE_OK|fromStr|toStr|fen
+        // Server sends: MOVE_OK|fromStr|toStr|fen|promoStr (promoStr may be empty)
         String fromStr = message.getParam(0);
         String toStr = message.getParam(1);
         String fen = message.getParam(2);
+        String promoStr = message.getParamCount() > 3 ? message.getParam(3) : "";
 
         board = new Board(fen);
         boardWidget.setBoard(board);
@@ -294,7 +300,9 @@ public class GameController implements MessageListener {
         );
 
         int moveNum = moveHistory.size() + 1;
-        moveHistory.add(moveNum + ". " + fromStr + "→" + toStr);
+        String moveText = fromStr + "→" + toStr;
+        if (!promoStr.isEmpty()) moveText += "=" + promoStr;
+        moveHistory.add(moveNum + ". " + moveText);
         moveHistoryList.scrollTo(moveHistory.size() - 1);
 
         myTurn = false;
@@ -304,10 +312,11 @@ public class GameController implements MessageListener {
 
     private void handleOpponentMove(Message message) {
         // Opponent made a move
-        // Server sends: OPPONENT_MOVE|fromStr|toStr|fen
+        // Server sends: OPPONENT_MOVE|fromStr|toStr|fen|promoStr (promoStr may be empty)
         String fromStr = message.getParam(0);
         String toStr = message.getParam(1);
         String fen = message.getParam(2);
+        String promoStr = message.getParamCount() > 3 ? message.getParam(3) : "";
 
         board = new Board(fen);
         boardWidget.setBoard(board);
@@ -317,7 +326,9 @@ public class GameController implements MessageListener {
         );
 
         int moveNum = moveHistory.size() + 1;
-        moveHistory.add(moveNum + ". ..." + fromStr + "→" + toStr);
+        String moveText = fromStr + "→" + toStr;
+        if (!promoStr.isEmpty()) moveText += "=" + promoStr;
+        moveHistory.add(moveNum + ". ..." + moveText);
         moveHistoryList.scrollTo(moveHistory.size() - 1);
 
         myTurn = true;

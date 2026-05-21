@@ -291,19 +291,23 @@ public class ClientHandler implements Runnable {
 
         String fromStr = msg.getParam(0);
         String toStr = msg.getParam(1);
-        Move move = Move.fromAlgebraic(fromStr, toStr);
+        String promoStr = msg.getParamCount() > 2 ? msg.getParam(2) : null;
+        Move move = Move.fromAlgebraic(fromStr, toStr, promoStr);
 
         GameRoom room = session.getCurrentRoom();
         MoveResult result = room.makeMove(session, move);
 
         if (result.isSuccess()) {
+            // Include promotion piece in response (empty string if not a promotion)
+            String promoParam = move.isPromotion() ? move.getPromotionPiece().name() : "";
+
             // Notify current player
-            sendMessage(new Message(MessageType.MOVE_OK, fromStr, toStr, result.getFen()));
+            sendMessage(new Message(MessageType.MOVE_OK, fromStr, toStr, result.getFen(), promoParam));
 
             // Notify opponent
             PlayerSession opponent = room.getOpponent(session);
             if (opponent != null) {
-                sendToPlayer(opponent, new Message(MessageType.OPPONENT_MOVE, fromStr, toStr, result.getFen()));
+                sendToPlayer(opponent, new Message(MessageType.OPPONENT_MOVE, fromStr, toStr, result.getFen(), promoParam));
             }
 
             // Check for game over
