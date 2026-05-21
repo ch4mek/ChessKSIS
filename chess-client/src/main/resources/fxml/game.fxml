@@ -3,70 +3,58 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.chess.client.gui.controller.GameController"
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.chess.client.gui.controller.GameController"
             style="-fx-background-color: #2c2c2c;">
 
     <!-- Top bar -->
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="15"
-              style="-fx-background-color: #1e1e1e; -fx-padding: 10 20;">
-            <Label text="♚ ChessKSiS" style="-fx-font-size: 20px; -fx-text-fill: #f0d9b5; -fx-font-weight: bold;"/>
+        <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-background-color: #333333; -fx-padding: 10;">
+            <Label fx:id="turnLabel" text="Ваш ход" style="-fx-font-size: 16px; -fx-text-fill: #f0d9b5; -fx-font-weight: bold;"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Label fx:id="turnLabel" text="Your turn" style="-fx-text-fill: #cccccc; -fx-font-size: 14px;"/>
-            <Label fx:id="gameStatusLabel" style="-fx-text-fill: #f0d9b5; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+            <Label fx:id="gameStatusLabel" style="-fx-text-fill: #aaaaaa; -fx-font-size: 13px;"/>
         </HBox>
     </top>
 
-    <!-- Center: chess board + side panel -->
+    <!-- Center: chess board -->
     <center>
-        <HBox spacing="15" style="-fx-padding: 15;">
-            <!-- Chess board area -->
-            <VBox alignment="CENTER" spacing="5">
-                <Label fx:id="opponentLabel" style="-fx-text-fill: #aaaaaa; -fx-font-size: 13px;"/>
-                <StackPane fx:id="boardContainer" style="-fx-border-color: #555555; -fx-border-width: 2;"/>
-                <Label fx:id="playerLabel" style="-fx-text-fill: #aaaaaa; -fx-font-size: 13px;"/>
-            </VBox>
-
-            <!-- Side panel -->
-            <VBox spacing="10" prefWidth="250">
-                <!-- Game info -->
-                <Label text="Game Info" style="-fx-text-fill: #f0d9b5; -fx-font-size: 16px; -fx-font-weight: bold;"/>
-                <Label fx:id="colorLabel" text="You play: White" style="-fx-text-fill: #cccccc;"/>
-                <Label fx:id="roomIdLabel" style="-fx-text-fill: #aaaaaa; -fx-font-size: 12px;"/>
-
-                <Separator/>
-
-                <!-- Game actions -->
-                <VBox spacing="8">
-                    <Button text="Resign" onAction="#onResign" maxWidth="Infinity"
-                            style="-fx-background-color: #c94040; -fx-text-fill: white; -fx-font-size: 13px;"/>
-                    <Button text="Offer Draw" onAction="#onOfferDraw" maxWidth="Infinity"
-                            style="-fx-background-color: #555555; -fx-text-fill: white; -fx-font-size: 13px;"/>
-                    <Button fx:id="acceptDrawBtn" text="Accept Draw" onAction="#onAcceptDraw" maxWidth="Infinity"
-                            visible="false" managed="false"
-                            style="-fx-background-color: #5a9e5a; -fx-text-fill: white; -fx-font-size: 13px;"/>
-                    <Button fx:id="declineDrawBtn" text="Decline Draw" onAction="#onDeclineDraw" maxWidth="Infinity"
-                            visible="false" managed="false"
-                            style="-fx-background-color: #c99040; -fx-text-fill: white; -fx-font-size: 13px;"/>
-                    <Button text="Leave Room" onAction="#onLeaveRoom" maxWidth="Infinity"
-                            style="-fx-background-color: #555555; -fx-text-fill: white; -fx-font-size: 13px;"/>
-                </VBox>
-
-                <Separator/>
-
-                <!-- Move history -->
-                <Label text="Move History" style="-fx-text-fill: #f0d9b5; -fx-font-size: 14px; -fx-font-weight: bold;"/>
-                <ListView fx:id="moveHistoryList" prefHeight="300"
-                          style="-fx-background-color: #3c3c3c; -fx-control-inner-background: #3c3c3c;"/>
-            </VBox>
-        </HBox>
+        <VBox alignment="CENTER" spacing="5">
+            <Label fx:id="opponentLabel" style="-fx-text-fill: #cccccc; -fx-font-size: 13px;"/>
+            <StackPane fx:id="boardContainer" prefWidth="480" prefHeight="480"/>
+            <Label fx:id="playerLabel" style="-fx-text-fill: #cccccc; -fx-font-size: 13px;"/>
+        </VBox>
     </center>
 
-    <!-- Bottom status bar -->
+    <!-- Right panel -->
+    <right>
+        <VBox spacing="10" style="-fx-padding: 15; -fx-pref-width: 220;">
+            <Label text="Информация" style="-fx-font-size: 16px; -fx-text-fill: #f0d9b5; -fx-font-weight: bold;"/>
+            <Label fx:id="colorLabel" text="Вы играете: Белыми" style="-fx-text-fill: #cccccc;"/>
+            <Label fx:id="roomIdLabel" style="-fx-text-fill: #cccccc;"/>
+
+            <Separator/>
+
+            <Button fx:id="resignButton" text="Сдаться" onAction="#onResign" maxWidth="Infinity"
+                    style="-fx-background-color: #8b4444; -fx-text-fill: white;"/>
+            <Button fx:id="offerDrawButton" text="Предложить ничью" onAction="#onOfferDraw" maxWidth="Infinity"
+                    style="-fx-background-color: #555555; -fx-text-fill: white;"/>
+            <HBox spacing="5">
+                <Button fx:id="acceptDrawBtn" text="Принять ничью" onAction="#onAcceptDraw" maxWidth="Infinity"
+                        visible="false" style="-fx-background-color: #5a9e5a; -fx-text-fill: white;"/>
+                <Button fx:id="declineDrawBtn" text="Отклонить" onAction="#onDeclineDraw" maxWidth="Infinity"
+                        visible="false" style="-fx-background-color: #8b4444; -fx-text-fill: white;"/>
+            </HBox>
+            <Button fx:id="leaveRoomButton" text="Покинуть комнату" onAction="#onLeaveRoom" maxWidth="Infinity"
+                    style="-fx-background-color: #555555; -fx-text-fill: white;"/>
+
+            <Separator/>
+
+            <Label text="История ходов" style="-fx-font-size: 14px; -fx-text-fill: #f0d9b5;"/>
+            <ListView fx:id="moveHistoryList" VBox.vgrow="ALWAYS" prefHeight="200"
+                      style="-fx-background-color: #3c3c3c; -fx-control-inner-background: #3c3c3c;"/>
+        </VBox>
+    </right>
+
     <bottom>
-        <HBox style="-fx-background-color: #1e1e1e; -fx-padding: 5 20;">
-            <Label fx:id="statusLabel" style="-fx-text-fill: #aaaaaa; -fx-font-size: 12px;"/>
-        </HBox>
+        <Label fx:id="statusLabel" style="-fx-text-fill: #ff6b6b; -fx-padding: 5; -fx-font-size: 12px;"/>
     </bottom>
 </BorderPane>

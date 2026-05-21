@@ -56,7 +56,7 @@ public class LoginController implements MessageListener {
         String password = passwordField.getText().trim();
 
         if (host.isEmpty() || username.isEmpty() || password.isEmpty()) {
-            statusLabel.setText("Please fill in all fields");
+            statusLabel.setText("Заполните все поля");
             return;
         }
 
@@ -64,12 +64,12 @@ public class LoginController implements MessageListener {
         try {
             port = Integer.parseInt(portText);
         } catch (NumberFormatException e) {
-            statusLabel.setText("Invalid port number");
+            statusLabel.setText("Неверный номер порта");
             return;
         }
 
         loginButton.setDisable(true);
-        statusLabel.setText("Connecting to server...");
+        statusLabel.setText("Подключение к серверу...");
 
         // Connect in background thread to avoid blocking UI
         new Thread(() -> {
@@ -82,10 +82,10 @@ public class LoginController implements MessageListener {
                 // Send AUTH message
                 connection.sendMessage(new Message(MessageType.AUTH, username, password));
 
-                Platform.runLater(() -> statusLabel.setText("Authenticating..."));
+                Platform.runLater(() -> statusLabel.setText("Аутентификация..."));
             } catch (IOException e) {
                 Platform.runLater(() -> {
-                    statusLabel.setText("Connection failed: " + e.getMessage());
+                    statusLabel.setText("Ошибка подключения: " + e.getMessage());
                     loginButton.setDisable(false);
                 });
             }
@@ -117,7 +117,7 @@ public class LoginController implements MessageListener {
                     System.err.println("[DEBUG] AUTH_OK received. Params: " + message.getParamCount());
                     System.err.println("[DEBUG] navigator = " + navigator);
                     System.err.println("[DEBUG] connection = " + connection);
-                    statusLabel.setText("Login successful!");
+                    statusLabel.setText("Вход выполнен!");
                     statusLabel.setStyle("-fx-text-fill: #5a9e5a; -fx-font-size: 12px;");
                     // Navigate to lobby
                     try {
@@ -138,27 +138,27 @@ public class LoginController implements MessageListener {
                                 System.err.println("[DEBUG] Navigation complete!");
                             } else {
                                 System.err.println("[DEBUG] ERROR: controller is null after navigation");
-                                statusLabel.setText("Error: lobby controller is null");
+                                statusLabel.setText("Ошибка: контроллер лобби равен null");
                                 statusLabel.setStyle("-fx-text-fill: #ff6b6b; -fx-font-size: 12px;");
                                 loginButton.setDisable(false);
                             }
                         } else {
                             System.err.println("[DEBUG] ERROR: navigator is null!");
-                            statusLabel.setText("Error: navigator is null");
+                            statusLabel.setText("Ошибка: навигатор равен null");
                             statusLabel.setStyle("-fx-text-fill: #ff6b6b; -fx-font-size: 12px;");
                             loginButton.setDisable(false);
                         }
                     } catch (Exception e) {
                         System.err.println("[DEBUG] EXCEPTION during navigation: " + e.getClass().getName() + ": " + e.getMessage());
                         e.printStackTrace();
-                        statusLabel.setText("Navigation error: " + e.getMessage());
+                        statusLabel.setText("Ошибка навигации: " + e.getMessage());
                         statusLabel.setStyle("-fx-text-fill: #ff6b6b; -fx-font-size: 12px;");
                         loginButton.setDisable(false);
                     }
                     break;
 
                 case AUTH_FAIL:
-                    statusLabel.setText("Authentication failed: " + message.getParam(0));
+                    statusLabel.setText("Ошибка входа: " + message.getParam(0));
                     statusLabel.setStyle("-fx-text-fill: #ff6b6b; -fx-font-size: 12px;");
                     loginButton.setDisable(false);
                     break;
@@ -172,7 +172,7 @@ public class LoginController implements MessageListener {
     @Override
     public void onConnectionLost() {
         Platform.runLater(() -> {
-            statusLabel.setText("Connection to server lost");
+            statusLabel.setText("Соединение с сервером потеряно");
             statusLabel.setStyle("-fx-text-fill: #ff6b6b; -fx-font-size: 12px;");
             loginButton.setDisable(false);
         });
@@ -181,7 +181,7 @@ public class LoginController implements MessageListener {
     @Override
     public void onError(String error) {
         Platform.runLater(() -> {
-            statusLabel.setText("Error: " + error);
+            statusLabel.setText("Ошибка: " + error);
             statusLabel.setStyle("-fx-text-fill: #ff6b6b; -fx-font-size: 12px;");
             loginButton.setDisable(false);
         });

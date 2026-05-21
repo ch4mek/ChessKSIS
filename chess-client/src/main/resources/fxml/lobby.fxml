@@ -3,54 +3,37 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.chess.client.gui.controller.LobbyController"
-            style="-fx-background-color: #2c2c2c;">
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="com.chess.client.gui.controller.LobbyController"
+      style="-fx-background-color: #2c2c2c; -fx-padding: 20;" spacing="10">
 
     <!-- Top bar -->
-    <top>
-        <HBox alignment="CENTER_LEFT" spacing="15"
-              style="-fx-background-color: #1e1e1e; -fx-padding: 10 20;">
-            <Label text="♚ ChessKSiS" style="-fx-font-size: 20px; -fx-text-fill: #f0d9b5; -fx-font-weight: bold;"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <Label fx:id="userLabel" style="-fx-text-fill: #cccccc; -fx-font-size: 14px;"/>
-            <Label fx:id="ratingLabel" style="-fx-text-fill: #aaaaaa; -fx-font-size: 14px;"/>
-            <Button text="Logout" onAction="#onLogout"
-                    style="-fx-background-color: #555555; -fx-text-fill: white;"/>
-        </HBox>
-    </top>
+    <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-padding: 0 0 10 0; -fx-border-color: #444444; -fx-border-width: 0 0 1 0;">
+        <Label text="♚ Лобби" style="-fx-font-size: 22px; -fx-text-fill: #f0d9b5; -fx-font-weight: bold;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="userLabel" style="-fx-text-fill: #cccccc; -fx-font-size: 13px;"/>
+        <Label fx:id="ratingLabel" style="-fx-text-fill: #aaaaaa; -fx-font-size: 12px;"/>
+        <Button text="Выйти" onAction="#onLogout" style="-fx-background-color: #8b4444; -fx-text-fill: white;"/>
+    </HBox>
 
-    <!-- Center content -->
-    <center>
-        <VBox spacing="15" style="-fx-padding: 20;">
-            <!-- Room actions -->
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <Button text="Create Room" onAction="#onCreateRoom"
-                        style="-fx-background-color: #5a9e5a; -fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 6 14;"/>
-                <Button text="Refresh" onAction="#onRefreshRooms"
-                        style="-fx-background-color: #555555; -fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 6 14;"/>
-            </HBox>
+    <!-- Controls -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button text="Создать комнату" onAction="#onCreateRoom" style="-fx-background-color: #5a9e5a; -fx-text-fill: white;"/>
+        <Button text="Обновить" onAction="#onRefreshRooms" style="-fx-background-color: #555555; -fx-text-fill: white;"/>
+    </HBox>
 
-            <!-- Room list -->
-            <Label text="Available Rooms:" style="-fx-text-fill: #cccccc; -fx-font-size: 14px;"/>
-            <TableView fx:id="roomsTable" prefHeight="400"
-                       style="-fx-background-color: #3c3c3c; -fx-control-inner-background: #3c3c3c;">
-                <columns>
-                    <TableColumn fx:id="roomNameColumn" text="Room" prefWidth="200"/>
-                    <TableColumn fx:id="playersColumn" text="Players" prefWidth="100"/>
-                    <TableColumn fx:id="statusColumn" text="Status" prefWidth="100"/>
-                </columns>
-            </TableView>
+    <!-- Room list -->
+    <Label text="Доступные комнаты:" style="-fx-text-fill: #cccccc; -fx-font-size: 14px;"/>
+    <TableView fx:id="roomsTable" VBox.vgrow="ALWAYS" style="-fx-background-color: #3c3c3c;">
+        <columns>
+            <TableColumn text="Комната" fx:id="roomNameColumn" prefWidth="200"/>
+            <TableColumn text="Игроки" fx:id="playersColumn" prefWidth="100"/>
+            <TableColumn text="Статус" fx:id="statusColumn" prefWidth="150"/>
+        </columns>
+    </TableView>
 
-            <Button text="Join Selected Room" onAction="#onJoinRoom"
-                    style="-fx-background-color: #4a90d9; -fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 6 14;"/>
-        </VBox>
-    </center>
+    <!-- Join button -->
+    <Button text="Присоединиться к выбранной комнате" onAction="#onJoinRoom" maxWidth="Infinity"
+            style="-fx-background-color: #4a7ab5; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8;"/>
 
-    <!-- Bottom status bar -->
-    <bottom>
-        <HBox style="-fx-background-color: #1e1e1e; -fx-padding: 5 20;">
-            <Label fx:id="statusLabel" style="-fx-text-fill: #aaaaaa; -fx-font-size: 12px;"/>
-        </HBox>
-    </bottom>
-</BorderPane>
+    <Label fx:id="statusLabel" style="-fx-text-fill: #ff6b6b; -fx-font-size: 12px;"/>
+</VBox>

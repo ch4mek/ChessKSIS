@@ -47,8 +47,8 @@ public class LobbyController implements MessageListener {
     public void setUserInfo(String username, String rating) {
         this.username = username;
         this.rating = rating;
-        userLabel.setText("Player: " + username);
-        ratingLabel.setText("Rating: " + rating);
+        userLabel.setText("Игрок: " + username);
+        ratingLabel.setText("Рейтинг: " + rating);
     }
 
     @FXML
@@ -67,7 +67,7 @@ public class LobbyController implements MessageListener {
             return row;
         });
 
-        statusLabel.setText("Connected to server");
+        statusLabel.setText("Подключено к серверу");
     }
 
     public void requestRoomList() {
@@ -75,7 +75,7 @@ public class LobbyController implements MessageListener {
             connection.setListener(this);
             connection.sendMessage(new Message(MessageType.LIST_ROOMS));
         } catch (IOException e) {
-            statusLabel.setText("Error: " + e.getMessage());
+            statusLabel.setText("Ошибка: " + e.getMessage());
         }
     }
 
@@ -83,31 +83,31 @@ public class LobbyController implements MessageListener {
     private void onCreateRoom() {
         try {
             connection.sendMessage(new Message(MessageType.CREATE_ROOM));
-            statusLabel.setText("Creating room...");
+            statusLabel.setText("Создание комнаты...");
         } catch (IOException e) {
-            statusLabel.setText("Error: " + e.getMessage());
+            statusLabel.setText("Ошибка: " + e.getMessage());
         }
     }
 
     @FXML
     private void onRefreshRooms() {
         requestRoomList();
-        statusLabel.setText("Refreshing room list...");
+        statusLabel.setText("Обновление списка комнат...");
     }
 
     @FXML
     private void onJoinRoom() {
         RoomInfo selected = roomsTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            statusLabel.setText("Please select a room to join");
+            statusLabel.setText("Выберите комнату для присоединения");
             return;
         }
 
         try {
             connection.sendMessage(new Message(MessageType.JOIN_ROOM, selected.getId()));
-            statusLabel.setText("Joining room " + selected.getName() + "...");
+            statusLabel.setText("Подключение к комнате " + selected.getName() + "...");
         } catch (IOException e) {
-            statusLabel.setText("Error: " + e.getMessage());
+            statusLabel.setText("Ошибка: " + e.getMessage());
         }
     }
 
@@ -132,11 +132,11 @@ public class LobbyController implements MessageListener {
                     break;
 
                 case ROOM_CREATED:
-                    statusLabel.setText("Room created! Waiting for opponent...");
+                    statusLabel.setText("Комната создана! Ожидание соперника...");
                     break;
 
                 case ROOM_JOINED:
-                    statusLabel.setText("Joined room " + message.getParam(0) + ". Waiting for opponent...");
+                    statusLabel.setText("Вы в комнате " + message.getParam(0) + ". Ожидание соперника...");
                     break;
 
                 case GAME_START:
@@ -144,11 +144,11 @@ public class LobbyController implements MessageListener {
                     break;
 
                 case ROOM_JOIN_FAIL:
-                    statusLabel.setText("Failed to join: " + message.getParam(0));
+                    statusLabel.setText("Не удалось присоединиться: " + message.getParam(0));
                     break;
 
                 case ERROR:
-                    statusLabel.setText("Error: " + message.getParam(0));
+                    statusLabel.setText("Ошибка: " + message.getParam(0));
                     break;
 
                 default:
@@ -173,7 +173,7 @@ public class LobbyController implements MessageListener {
 
         ObservableList<RoomInfo> roomList = FXCollections.observableArrayList(rooms);
         roomsTable.setItems(roomList);
-        statusLabel.setText("Rooms: " + rooms.size());
+        statusLabel.setText("Комнат: " + rooms.size());
     }
 
     private void handleGameStart(Message message) {
@@ -195,12 +195,12 @@ public class LobbyController implements MessageListener {
 
     @Override
     public void onConnectionLost() {
-        Platform.runLater(() -> statusLabel.setText("Connection to server lost"));
+        Platform.runLater(() -> statusLabel.setText("Соединение с сервером потеряно"));
     }
 
     @Override
     public void onError(String error) {
-        Platform.runLater(() -> statusLabel.setText("Error: " + error));
+        Platform.runLater(() -> statusLabel.setText("Ошибка: " + error));
     }
 
     /**

@@ -37,6 +37,7 @@ public class ChessBoardWidget extends GridPane {
     private static final Color SELECTED_COLOR = Color.rgb(130, 151, 105, 0.7);
     private static final Color LEGAL_MOVE_COLOR = Color.rgb(130, 151, 105, 0.5);
     private static final Color LAST_MOVE_COLOR = Color.rgb(205, 210, 106, 0.5);
+    private static final Color CHECK_COLOR = Color.rgb(235, 64, 52, 0.7);
 
     private final Rectangle[][] squares = new Rectangle[BOARD_SIZE][BOARD_SIZE];
     private final StackPane[][] cells = new StackPane[BOARD_SIZE][BOARD_SIZE];
@@ -247,6 +248,12 @@ public class ChessBoardWidget extends GridPane {
      * Updates the visual highlights on the board.
      */
     private void updateHighlights() {
+        // Detect check state for current turn
+        Position checkKingPos = null;
+        if (board != null && board.isInCheck(board.getCurrentTurn())) {
+            checkKingPos = board.findKing(board.getCurrentTurn());
+        }
+
         for (int displayRow = 0; displayRow < BOARD_SIZE; displayRow++) {
             for (int displayCol = 0; displayCol < BOARD_SIZE; displayCol++) {
                 int boardRow = flipped ? (7 - displayRow) : displayRow;
@@ -268,6 +275,11 @@ public class ChessBoardWidget extends GridPane {
                 // Highlight selected square
                 if (selectedPosition != null && pos.equals(selectedPosition)) {
                     color = SELECTED_COLOR;
+                }
+
+                // Highlight king in check (red glow)
+                if (checkKingPos != null && pos.equals(checkKingPos)) {
+                    color = CHECK_COLOR;
                 }
 
                 squares[displayRow][displayCol].setFill(color);
@@ -319,11 +331,11 @@ public class ChessBoardWidget extends GridPane {
      * @return the chosen piece type, defaults to QUEEN if dialog is dismissed
      */
     private PieceType showPromotionDialog(GameColor color) {
-        List<String> choices = Arrays.asList("Queen", "Rook", "Bishop", "Knight");
-        javafx.scene.control.ChoiceDialog<String> dialog = new javafx.scene.control.ChoiceDialog<>("Queen", choices);
-        dialog.setTitle("Pawn Promotion");
-        dialog.setHeaderText("Choose promotion piece:");
-        dialog.setContentText("Promote to:");
+        List<String> choices = Arrays.asList("Ферзь", "Ладья", "Слон", "Конь");
+        javafx.scene.control.ChoiceDialog<String> dialog = new javafx.scene.control.ChoiceDialog<>("Ферзь", choices);
+        dialog.setTitle("Превращение пешки");
+        dialog.setHeaderText("Выберите фигуру:");
+        dialog.setContentText("Превратить в:");
 
         // Style the dialog
         dialog.getDialogPane().setStyle(
@@ -337,9 +349,9 @@ public class ChessBoardWidget extends GridPane {
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
             switch (result.get()) {
-                case "Rook":   return PieceType.ROOK;
-                case "Bishop": return PieceType.BISHOP;
-                case "Knight": return PieceType.KNIGHT;
+                case "Ладья":  return PieceType.ROOK;
+                case "Слон":   return PieceType.BISHOP;
+                case "Конь":   return PieceType.KNIGHT;
                 default:       return PieceType.QUEEN;
             }
         }

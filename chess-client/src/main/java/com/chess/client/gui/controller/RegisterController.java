@@ -56,27 +56,27 @@ public class RegisterController implements MessageListener {
         String confirmPassword = confirmPasswordField.getText().trim();
 
         if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-            statusLabel.setText("Please fill in all fields");
+            statusLabel.setText("Заполните все поля");
             return;
         }
 
         if (username.length() < 3) {
-            statusLabel.setText("Username must be at least 3 characters");
+            statusLabel.setText("Имя пользователя должно содержать минимум 3 символа");
             return;
         }
 
         if (password.length() < 4) {
-            statusLabel.setText("Password must be at least 4 characters");
+            statusLabel.setText("Пароль должен содержать минимум 4 символа");
             return;
         }
 
         if (!password.equals(confirmPassword)) {
-            statusLabel.setText("Passwords do not match");
+            statusLabel.setText("Пароли не совпадают");
             return;
         }
 
         registerButton.setDisable(true);
-        statusLabel.setText("Connecting to server...");
+        statusLabel.setText("Подключение к серверу...");
         statusLabel.setStyle("-fx-text-fill: #aaaaaa; -fx-font-size: 12px;");
 
         // Connect in background thread to avoid blocking UI
@@ -90,12 +90,12 @@ public class RegisterController implements MessageListener {
                 connection.sendMessage(new Message(MessageType.REGISTER, username, password));
 
                 Platform.runLater(() -> {
-                    statusLabel.setText("Registering...");
+                    statusLabel.setText("Регистрация...");
                     statusLabel.setStyle("-fx-text-fill: #aaaaaa; -fx-font-size: 12px;");
                 });
             } catch (IOException e) {
                 Platform.runLater(() -> {
-                    statusLabel.setText("Connection failed: " + e.getMessage());
+                    statusLabel.setText("Ошибка подключения: " + e.getMessage());
                     statusLabel.setStyle("-fx-text-fill: #ff6b6b; -fx-font-size: 12px;");
                     registerButton.setDisable(false);
                 });
@@ -119,13 +119,13 @@ public class RegisterController implements MessageListener {
         Platform.runLater(() -> {
             switch (message.getType()) {
                 case REGISTER_OK:
-                    statusLabel.setText("Registration successful! You can now login.");
+                    statusLabel.setText("Регистрация успешна! Теперь вы можете войти.");
                     statusLabel.setStyle("-fx-text-fill: #5a9e5a; -fx-font-size: 12px;");
                     registerButton.setDisable(false);
                     break;
 
                 case REGISTER_FAIL:
-                    statusLabel.setText("Registration failed: " + message.getParam(0));
+                    statusLabel.setText("Ошибка регистрации: " + message.getParam(0));
                     statusLabel.setStyle("-fx-text-fill: #ff6b6b; -fx-font-size: 12px;");
                     registerButton.setDisable(false);
                     break;
@@ -139,7 +139,7 @@ public class RegisterController implements MessageListener {
     @Override
     public void onConnectionLost() {
         Platform.runLater(() -> {
-            statusLabel.setText("Connection to server lost");
+            statusLabel.setText("Соединение с сервером потеряно");
             statusLabel.setStyle("-fx-text-fill: #ff6b6b; -fx-font-size: 12px;");
             registerButton.setDisable(false);
         });
@@ -148,7 +148,7 @@ public class RegisterController implements MessageListener {
     @Override
     public void onError(String error) {
         Platform.runLater(() -> {
-            statusLabel.setText("Error: " + error);
+            statusLabel.setText("Ошибка: " + error);
             statusLabel.setStyle("-fx-text-fill: #ff6b6b; -fx-font-size: 12px;");
             registerButton.setDisable(false);
         });

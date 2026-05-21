@@ -92,16 +92,16 @@ public class GameController implements MessageListener {
         connection.setListener(this);
 
         // Update UI
-        colorLabel.setText("You play: " + (myColor == GameColor.WHITE ? "White" : "Black"));
-        roomIdLabel.setText("Room: " + roomId);
+        colorLabel.setText("Вы играете: " + (myColor == GameColor.WHITE ? "Белыми" : "Чёрными"));
+        roomIdLabel.setText("Комната: " + roomId);
 
         if (myColor == GameColor.WHITE) {
-            playerLabel.setText("You (White)");
-            opponentLabel.setText(opponent + " (Black)");
+            playerLabel.setText("Вы (Белые)");
+            opponentLabel.setText(opponent + " (Чёрные)");
             boardWidget.setFlipped(false);
         } else {
-            playerLabel.setText("You (Black)");
-            opponentLabel.setText(opponent + " (White)");
+            playerLabel.setText("Вы (Чёрные)");
+            opponentLabel.setText(opponent + " (Белые)");
             boardWidget.setFlipped(true);
         }
 
@@ -111,7 +111,7 @@ public class GameController implements MessageListener {
         // Set move callback
         boardWidget.setMoveCallback((from, to, promotionPiece) -> {
             if (!myTurn || gameOver) {
-                statusLabel.setText("It's not your turn!");
+                statusLabel.setText("Сейчас не ваш ход!");
                 return;
             }
             sendMove(from, to, promotionPiece);
@@ -119,19 +119,19 @@ public class GameController implements MessageListener {
 
         moveHistory.clear();
         hideDrawButtons();
-        statusLabel.setText("Game started!");
+        statusLabel.setText("Игра началась!");
     }
 
     private void updateTurnLabel() {
         if (gameOver) {
-            turnLabel.setText("Game over");
+            turnLabel.setText("Игра окончена");
             return;
         }
         if (myTurn) {
-            turnLabel.setText("Your turn (" + (myColor == GameColor.WHITE ? "White" : "Black") + ")");
+            turnLabel.setText("Ваш ход (" + (myColor == GameColor.WHITE ? "Белые" : "Чёрные") + ")");
             turnLabel.setStyle("-fx-text-fill: #5a9e5a; -fx-font-size: 14px;");
         } else {
-            turnLabel.setText("Opponent's turn");
+            turnLabel.setText("Ход соперника");
             turnLabel.setStyle("-fx-text-fill: #cccccc; -fx-font-size: 14px;");
         }
     }
@@ -146,10 +146,10 @@ public class GameController implements MessageListener {
             } else {
                 connection.sendMessage(new Message(MessageType.MOVE, fromStr, toStr));
             }
-            statusLabel.setText("Sending move...");
+            statusLabel.setText("Отправка хода...");
             boardWidget.clearSelection();
         } catch (IOException e) {
-            statusLabel.setText("Error sending move: " + e.getMessage());
+            statusLabel.setText("Ошибка отправки хода: " + e.getMessage());
         }
     }
 
@@ -159,9 +159,9 @@ public class GameController implements MessageListener {
 
         try {
             connection.sendMessage(new Message(MessageType.RESIGN));
-            statusLabel.setText("You resigned.");
+            statusLabel.setText("Вы сдались.");
         } catch (IOException e) {
-            statusLabel.setText("Error: " + e.getMessage());
+            statusLabel.setText("Ошибка: " + e.getMessage());
         }
     }
 
@@ -171,9 +171,9 @@ public class GameController implements MessageListener {
 
         try {
             connection.sendMessage(new Message(MessageType.OFFER_DRAW));
-            statusLabel.setText("Draw offer sent.");
+            statusLabel.setText("Предложение ничьей отправлено.");
         } catch (IOException e) {
-            statusLabel.setText("Error: " + e.getMessage());
+            statusLabel.setText("Ошибка: " + e.getMessage());
         }
     }
 
@@ -183,10 +183,10 @@ public class GameController implements MessageListener {
 
         try {
             connection.sendMessage(new Message(MessageType.ACCEPT_DRAW));
-            statusLabel.setText("Draw accepted.");
+            statusLabel.setText("Ничья принята.");
             hideDrawButtons();
         } catch (IOException e) {
-            statusLabel.setText("Error: " + e.getMessage());
+            statusLabel.setText("Ошибка: " + e.getMessage());
         }
     }
 
@@ -196,10 +196,10 @@ public class GameController implements MessageListener {
 
         try {
             connection.sendMessage(new Message(MessageType.DECLINE_DRAW));
-            statusLabel.setText("Draw declined.");
+            statusLabel.setText("Ничья отклонена.");
             hideDrawButtons();
         } catch (IOException e) {
-            statusLabel.setText("Error: " + e.getMessage());
+            statusLabel.setText("Ошибка: " + e.getMessage());
         }
     }
 
@@ -249,7 +249,7 @@ public class GameController implements MessageListener {
                     break;
 
                 case MOVE_INVALID:
-                    statusLabel.setText("Illegal move: " + message.getParam(0));
+                    statusLabel.setText("Недопустимый ход: " + message.getParam(0));
                     boardWidget.clearSelection();
                     break;
 
@@ -259,23 +259,23 @@ public class GameController implements MessageListener {
 
                 case DRAW_OFFERED:
                     if (message.getParamCount() > 0 && "DECLINED".equals(message.getParam(0))) {
-                        statusLabel.setText("Opponent declined your draw offer.");
+                        statusLabel.setText("Соперник отклонил предложение ничьей.");
                     } else {
-                        statusLabel.setText("Opponent offers a draw. Accept?");
+                        statusLabel.setText("Соперник предлагает ничью. Принять?");
                         showDrawButtons();
                     }
                     break;
 
                 case OPPONENT_DISCONNECTED:
-                    statusLabel.setText("Opponent disconnected. You win!");
-                    gameStatusLabel.setText("Opponent disconnected — You win!");
+                    statusLabel.setText("Соперник отключился. Вы победили!");
+                    gameStatusLabel.setText("Соперник отключился — Победа!");
                     gameStatusLabel.setStyle("-fx-text-fill: #5a9e5a; -fx-font-size: 14px; -fx-font-weight: bold;");
                     gameOver = true;
                     updateTurnLabel();
                     break;
 
                 case ERROR:
-                    statusLabel.setText("Error: " + message.getParam(0));
+                    statusLabel.setText("Ошибка: " + message.getParam(0));
                     break;
 
                 default:
@@ -307,7 +307,7 @@ public class GameController implements MessageListener {
 
         myTurn = false;
         updateTurnLabel();
-        statusLabel.setText("Move sent. Waiting for opponent...");
+        statusLabel.setText("Ход отправлен. Ожидание соперника...");
     }
 
     private void handleOpponentMove(Message message) {
@@ -333,7 +333,7 @@ public class GameController implements MessageListener {
 
         myTurn = true;
         updateTurnLabel();
-        statusLabel.setText("Your turn!");
+        statusLabel.setText("Ваш ход!");
     }
 
     private void handleGameOver(Message message) {
@@ -347,13 +347,13 @@ public class GameController implements MessageListener {
         String displayText;
         switch (result) {
             case "WIN":
-                displayText = "You win!";
+                displayText = "Вы победили!";
                 break;
             case "LOSE":
-                displayText = "You lose!";
+                displayText = "Вы проиграли!";
                 break;
             case "DRAW":
-                displayText = "Draw!";
+                displayText = "Ничья!";
                 break;
             default:
                 displayText = result;
@@ -361,14 +361,14 @@ public class GameController implements MessageListener {
 
         gameStatusLabel.setText(displayText + " (" + reason + ")");
         gameStatusLabel.setStyle("-fx-text-fill: #f0d9b5; -fx-font-size: 14px; -fx-font-weight: bold;");
-        statusLabel.setText("Game over: " + displayText + " — " + reason);
+        statusLabel.setText("Игра окончена: " + displayText + " — " + reason);
         updateTurnLabel();
     }
 
     @Override
     public void onConnectionLost() {
         Platform.runLater(() -> {
-            statusLabel.setText("Connection to server lost!");
+            statusLabel.setText("Соединение с сервером потеряно!");
             statusLabel.setStyle("-fx-text-fill: #ff6b6b; -fx-font-size: 12px;");
             gameOver = true;
             updateTurnLabel();
@@ -377,6 +377,6 @@ public class GameController implements MessageListener {
 
     @Override
     public void onError(String error) {
-        Platform.runLater(() -> statusLabel.setText("Error: " + error));
+        Platform.runLater(() -> statusLabel.setText("Ошибка: " + error));
     }
 }

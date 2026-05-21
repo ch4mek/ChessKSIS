@@ -9,30 +9,30 @@
       style="-fx-background-color: #2c2c2c; -fx-padding: 30;">
 
     <Label text="♚ ChessKSiS" style="-fx-font-size: 32px; -fx-text-fill: #f0d9b5; -fx-font-weight: bold;"/>
-    <Label text="Login to play chess online" style="-fx-font-size: 14px; -fx-text-fill: #aaaaaa;"/>
+    <Label text="Войдите, чтобы играть в шахматы онлайн" style="-fx-font-size: 14px; -fx-text-fill: #aaaaaa;"/>
 
     <VBox alignment="CENTER" spacing="10" maxWidth="300">
-        <Label text="Server:" style="-fx-text-fill: #cccccc;"/>
+        <Label text="Сервер:" style="-fx-text-fill: #cccccc;"/>
         <HBox spacing="5">
-            <TextField fx:id="serverHostField" text="localhost" promptText="Host"
+            <TextField fx:id="serverHostField" text="localhost" promptText="Хост"
                        HBox.hgrow="ALWAYS" style="-fx-background-color: #3c3c3c; -fx-text-fill: white;"/>
-            <TextField fx:id="serverPortField" text="5555" promptText="Port" prefWidth="80"
+            <TextField fx:id="serverPortField" text="5555" promptText="Порт" prefWidth="80"
                        style="-fx-background-color: #3c3c3c; -fx-text-fill: white;"/>
         </HBox>
 
-        <Label text="Username:" style="-fx-text-fill: #cccccc;"/>
-        <TextField fx:id="usernameField" promptText="Enter username"
+        <Label text="Имя пользователя:" style="-fx-text-fill: #cccccc;"/>
+        <TextField fx:id="usernameField" promptText="Введите имя пользователя"
                    style="-fx-background-color: #3c3c3c; -fx-text-fill: white;"/>
 
-        <Label text="Password:" style="-fx-text-fill: #cccccc;"/>
-        <PasswordField fx:id="passwordField" promptText="Enter password"
+        <Label text="Пароль:" style="-fx-text-fill: #cccccc;"/>
+        <PasswordField fx:id="passwordField" promptText="Введите пароль"
                        style="-fx-background-color: #3c3c3c; -fx-text-fill: white;"/>
     </VBox>
 
     <VBox alignment="CENTER" spacing="8" maxWidth="300">
-        <Button fx:id="loginButton" text="Login" onAction="#onLogin" maxWidth="Infinity"
+        <Button fx:id="loginButton" text="Войти" onAction="#onLogin" maxWidth="Infinity"
                 style="-fx-background-color: #5a9e5a; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8 16;"/>
-        <Button fx:id="registerButton" text="Register" onAction="#onGoToRegister" maxWidth="Infinity"
+        <Button fx:id="registerButton" text="Регистрация" onAction="#onGoToRegister" maxWidth="Infinity"
                 style="-fx-background-color: #555555; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 8 16;"/>
     </VBox>
 
