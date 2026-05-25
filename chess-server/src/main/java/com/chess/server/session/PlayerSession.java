@@ -2,10 +2,7 @@ package com.chess.server.session;
 
 import com.chess.common.model.GameColor;
 
-/**
- * Represents a connected player's session on the server.
- * Tracks authentication state and current game room.
- */
+
 public class PlayerSession {
 
     private final int userId;

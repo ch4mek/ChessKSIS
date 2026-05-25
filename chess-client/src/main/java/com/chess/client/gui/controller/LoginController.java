@@ -15,10 +15,6 @@ import javafx.scene.control.TextField;
 
 import java.io.IOException;
 
-/**
- * Controller for the login screen.
- * Handles server connection and user authentication.
- */
 public class LoginController implements MessageListener {
 
     @FXML private TextField serverHostField;
@@ -32,9 +28,6 @@ public class LoginController implements MessageListener {
     private ServerConnection connection;
     private SceneNavigator navigator;
 
-    /**
-     * Called by ClientApp to inject shared dependencies.
-     */
     public void setConnection(ServerConnection connection) {
         this.connection = connection;
     }
@@ -71,7 +64,6 @@ public class LoginController implements MessageListener {
         loginButton.setDisable(true);
         statusLabel.setText("Подключение к серверу...");
 
-        // Connect in background thread to avoid blocking UI
         new Thread(() -> {
             try {
                 if (!connection.isConnected()) {
@@ -79,7 +71,6 @@ public class LoginController implements MessageListener {
                 }
                 connection.setListener(this);
 
-                // Send AUTH message
                 connection.sendMessage(new Message(MessageType.AUTH, username, password));
 
                 Platform.runLater(() -> statusLabel.setText("Аутентификация..."));
@@ -99,7 +90,6 @@ public class LoginController implements MessageListener {
             if (controller != null) {
                 controller.setConnection(connection);
                 controller.setNavigator(navigator);
-                // Preserve server fields
                 controller.setServerFields(
                     serverHostField.getText(),
                     serverPortField.getText()
@@ -119,7 +109,6 @@ public class LoginController implements MessageListener {
                     System.err.println("[DEBUG] connection = " + connection);
                     statusLabel.setText("Вход выполнен!");
                     statusLabel.setStyle("-fx-text-fill: #5a9e5a; -fx-font-size: 12px;");
-                    // Navigate to lobby
                     try {
                         if (navigator != null) {
                             System.err.println("[DEBUG] Calling navigateToAndGetController(LOBBY)...");

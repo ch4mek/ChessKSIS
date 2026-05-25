@@ -4,11 +4,7 @@ import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Data Access Object for game-related database operations.
- * All methods are synchronized on dbManager to prevent concurrent access
- * to the single shared JDBC Connection from multiple ClientHandler threads.
- */
+
 public class GameDAO {
 
     private static final Logger LOGGER = Logger.getLogger(GameDAO.class.getName());
@@ -19,11 +15,7 @@ public class GameDAO {
         this.dbManager = dbManager;
     }
 
-    /**
-     * Saves a new game record.
-     *
-     * @return the generated game ID, or -1 on failure
-     */
+
     public int saveGame(int whitePlayerId, int blackPlayerId) {
         synchronized (dbManager) {
             String sql = "INSERT INTO games (white_player_id, black_player_id) VALUES (?, ?)";
@@ -43,9 +35,7 @@ public class GameDAO {
         }
     }
 
-    /**
-     * Updates a game with the final result.
-     */
+
     public void updateGameResult(int gameId, String result, String reason, String pgn) {
         synchronized (dbManager) {
             String sql = "UPDATE games SET result = ?, reason = ?, pgn = ?, finished_at = NOW() WHERE id = ?";
@@ -61,9 +51,7 @@ public class GameDAO {
         }
     }
 
-    /**
-     * Saves a single move in a game.
-     */
+
     public void saveMove(int gameId, int moveNumber, String fromSquare, String toSquare,
                          String pieceType, boolean isCapture, boolean isCheck, String notation) {
         synchronized (dbManager) {

@@ -15,13 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * TCP Chess Server.
- * Accepts client connections and spawns a ClientHandler thread for each.
- * <p>
- * This is the core networking component of the application.
- * Uses ServerSocket for TCP listening and ExecutorService for thread management.
- */
+
 public class ChessServer {
 
     private static final Logger LOGGER = Logger.getLogger(ChessServer.class.getName());
@@ -46,26 +40,21 @@ public class ChessServer {
         this.authService = new AuthService(userDAO);
     }
 
-    /**
-     * Starts the server: connects to DB and begins accepting connections.
-     */
+
     public void start() {
         try {
-            // Connect to database
+
             dbManager.connect();
             LOGGER.info("Database connected successfully");
 
-            // Create thread pool for client handlers
             threadPool = Executors.newCachedThreadPool();
 
-            // Bind server socket to port (0.0.0.0 = all interfaces)
             serverSocket = new ServerSocket(config.getServerPort(), config.getBacklog());
             running = true;
 
             LOGGER.info("Chess Server started on port " + config.getServerPort());
             LOGGER.info("Waiting for client connections...");
 
-            // Accept loop — blocks until stop() is called
             acceptLoop();
 
         } catch (IOException e) {
@@ -75,27 +64,18 @@ public class ChessServer {
         }
     }
 
-    /**
-     * Main accept loop. Blocks on ServerSocket.accept() and spawns
-     * a new ClientHandler thread for each connection.
-     * <p>
-     * This demonstrates the classic TCP server pattern:
-     * 1. ServerSocket.accept() returns a Socket for each new client
-     * 2. A new thread (via ExecutorService) handles the client
-     * 3. The main thread goes back to accepting more connections
-     */
+
     private void acceptLoop() {
         while (running) {
             try {
                 Socket clientSocket = serverSocket.accept();
-                clientSocket.setTcpNoDelay(true); // Disable Nagle's algorithm for lower latency
-                clientSocket.setSoTimeout(60_000); // 60s read timeout — detect half-hung connections
+                clientSocket.setTcpNoDelay(true);
+                clientSocket.setSoTimeout(60_000);
 
                 String clientAddr = clientSocket.getInetAddress().getHostAddress();
                 int clientPort = clientSocket.getPort();
                 LOGGER.info("Client connected: " + clientAddr + ":" + clientPort);
 
-                // Create handler and submit to thread pool
                 ClientHandler handler = new ClientHandler(clientSocket, this);
                 threadPool.submit(handler);
 
@@ -107,9 +87,7 @@ public class ChessServer {
         }
     }
 
-    /**
-     * Stops the server gracefully.
-     */
+
     public void stop() {
         running = false;
         try {
@@ -126,7 +104,6 @@ public class ChessServer {
         LOGGER.info("Chess Server stopped");
     }
 
-    // Getters for components used by ClientHandler
     public GameManager getGameManager() { return gameManager; }
     public AuthService getAuthService() { return authService; }
     public DatabaseManager getDbManager() { return dbManager; }

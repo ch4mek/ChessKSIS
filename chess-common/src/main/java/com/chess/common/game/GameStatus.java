@@ -1,8 +1,5 @@
 package com.chess.common.game;
 
-/**
- * Represents the current status of a chess game.
- */
 public enum GameStatus {
     IN_PROGRESS,
     WHITE_WINS,
@@ -19,30 +16,18 @@ public enum GameStatus {
     WHITE_WINS_DISCONNECT,
     BLACK_WINS_DISCONNECT;
 
-    /**
-     * @return true if the game is over (any terminal state)
-     */
     public boolean isGameOver() {
         return this != IN_PROGRESS;
     }
 
-    /**
-     * @return true if this status represents a draw
-     */
     public boolean isDraw() {
         return this.name().startsWith("DRAW");
     }
 
-    /**
-     * @return true if white wins
-     */
     public boolean isWhiteWins() {
         return this == WHITE_WINS || this == WHITE_WINS_RESIGN || this == WHITE_WINS_TIMEOUT || this == WHITE_WINS_DISCONNECT;
     }
 
-    /**
-     * @return true if black wins
-     */
     public boolean isBlackWins() {
         return this == BLACK_WINS || this == BLACK_WINS_RESIGN || this == BLACK_WINS_TIMEOUT || this == BLACK_WINS_DISCONNECT;
     }

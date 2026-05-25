@@ -35,12 +35,7 @@ public class ServerConfig {
         this.ratingKFactor = 32;
     }
 
-    /**
-     * Loads configuration from a properties file.
-     *
-     * @param filename the properties file path
-     * @return loaded configuration
-     */
+
     public static ServerConfig fromFile(String filename) {
         ServerConfig config = new ServerConfig();
         try (InputStream is = new FileInputStream(filename)) {
@@ -51,9 +46,7 @@ public class ServerConfig {
         return config;
     }
 
-    /**
-     * Loads configuration from an InputStream.
-     */
+
     public void load(InputStream is) throws IOException {
         Properties props = new Properties();
         props.load(is);

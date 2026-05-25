@@ -6,9 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-/**
- * Handles user authentication and registration.
- */
+
 public class AuthService {
 
     private final UserDAO userDAO;
@@ -17,13 +15,7 @@ public class AuthService {
         this.userDAO = userDAO;
     }
 
-    /**
-     * Registers a new user.
-     *
-     * @param username the username
-     * @param password the plaintext password
-     * @return UserRecord if registration succeeds, null otherwise
-     */
+
     public UserDAO.UserRecord register(String username, String password) {
         if (username == null || username.length() < 3 || username.length() > 50) {
             return null;
@@ -39,24 +31,13 @@ public class AuthService {
         return null;
     }
 
-    /**
-     * Authenticates a user.
-     *
-     * @param username the username
-     * @param password the plaintext password
-     * @return UserRecord if authentication succeeds, null otherwise
-     */
+
     public UserDAO.UserRecord login(String username, String password) {
         String hash = hashPassword(password);
         return userDAO.findByUsername(username, hash);
     }
 
-    /**
-     * Hashes a password using SHA-256.
-     *
-     * @param password the plaintext password
-     * @return the hex-encoded hash
-     */
+
     private String hashPassword(String password) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

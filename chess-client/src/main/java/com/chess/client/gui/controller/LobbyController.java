@@ -17,10 +17,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Controller for the lobby screen.
- * Shows available game rooms and allows creating/joining rooms.
- */
 public class LobbyController implements MessageListener {
 
     @FXML private Label userLabel;
@@ -161,7 +157,6 @@ public class LobbyController implements MessageListener {
         List<RoomInfo> rooms = new ArrayList<>();
         int paramCount = message.getParamCount();
 
-        // Room list format: roomId|roomName|playerCount|status per entry
         for (int i = 0; i + 3 < paramCount; i += 4) {
             rooms.add(new RoomInfo(
                 message.getParam(i),
@@ -177,7 +172,6 @@ public class LobbyController implements MessageListener {
     }
 
     private void handleGameStart(Message message) {
-        // GAME_START params: color|opponentName|roomId|fen
         String color = message.getParam(0);
         String opponent = message.getParam(1);
         String roomId = message.getParam(2);
@@ -203,9 +197,6 @@ public class LobbyController implements MessageListener {
         Platform.runLater(() -> statusLabel.setText("Ошибка: " + error));
     }
 
-    /**
-     * Data class for room table entries.
-     */
     public static class RoomInfo {
         private final String id;
         private final String name;

@@ -23,10 +23,6 @@ import javafx.scene.layout.StackPane;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-/**
- * Controller for the game screen.
- * Manages the chess board, move sending, and game state updates.
- */
 public class GameController implements MessageListener {
 
     private static final Logger LOGGER = Logger.getLogger(GameController.class.getName());
@@ -37,7 +33,7 @@ public class GameController implements MessageListener {
     @FXML private Label opponentLabel;
     @FXML private Label playerLabel;
     @FXML private Label colorLabel;
-    @FXML private Label roomIdLabel;
+    @FXML private Label roomIdIdLabel;
     @FXML private Label statusLabel;
     @FXML private ListView<String> moveHistoryList;
     @FXML private Button acceptDrawBtn;
@@ -73,27 +69,18 @@ public class GameController implements MessageListener {
         moveHistoryList.setStyle("-fx-font-family: monospace; -fx-font-size: 12px;");
     }
 
-    /**
-     * Initializes the game state after GAME_START message.
-     *
-     * @param colorStr  "WHITE" or "BLACK"
-     * @param opponent  opponent's username
-     * @param roomId    room ID
-     * @param fen       initial FEN string
-     */
     public void initGame(String colorStr, String opponent, String roomId, String fen) {
         this.myColor = GameColor.valueOf(colorStr);
         this.opponentName = opponent;
         this.roomId = roomId;
         this.board = new Board(fen);
         this.gameOver = false;
-        this.myTurn = (myColor == GameColor.WHITE); // White moves first
+        this.myTurn = (myColor == GameColor.WHITE);
 
         connection.setListener(this);
 
-        // Update UI
         colorLabel.setText("Вы играете: " + (myColor == GameColor.WHITE ? "Белыми" : "Чёрными"));
-        roomIdLabel.setText("Комната: " + roomId);
+        roomIdIdLabel.setText("Комната: " + roomId);
 
         if (myColor == GameColor.WHITE) {
             playerLabel.setText("Вы (Белые)");
@@ -108,7 +95,6 @@ public class GameController implements MessageListener {
         updateTurnLabel();
         boardWidget.setBoard(board);
 
-        // Set move callback
         boardWidget.setMoveCallback((from, to, promotionPiece) -> {
             if (!myTurn || gameOver) {
                 statusLabel.setText("Сейчас не ваш ход!");
@@ -222,10 +208,8 @@ public class GameController implements MessageListener {
         try {
             connection.sendMessage(new Message(MessageType.LEAVE_ROOM));
         } catch (IOException e) {
-            // Ignore, we're leaving anyway
         }
 
-        // Navigate back to lobby
         if (navigator != null) {
             LobbyController controller = navigator.navigateToAndGetController(SceneNavigator.LOBBY);
             if (controller != null) {
@@ -285,8 +269,6 @@ public class GameController implements MessageListener {
     }
 
     private void handleMoveOk(Message message) {
-        // Our move was accepted by the server
-        // Server sends: MOVE_OK|fromStr|toStr|fen|promoStr (promoStr may be empty)
         String fromStr = message.getParam(0);
         String toStr = message.getParam(1);
         String fen = message.getParam(2);
@@ -311,8 +293,6 @@ public class GameController implements MessageListener {
     }
 
     private void handleOpponentMove(Message message) {
-        // Opponent made a move
-        // Server sends: OPPONENT_MOVE|fromStr|toStr|fen|promoStr (promoStr may be empty)
         String fromStr = message.getParam(0);
         String toStr = message.getParam(1);
         String fen = message.getParam(2);
@@ -339,9 +319,8 @@ public class GameController implements MessageListener {
     private void handleGameOver(Message message) {
         gameOver = true;
         hideDrawButtons();
-        // Server sends: GAME_OVER|"WIN"/"LOSE"/"DRAW"|reason|ratingChange
-        String result = message.getParam(0); // "WIN", "LOSE", or "DRAW" (relative to this player)
-        String reason = message.getParam(1); // e.g., "checkmate", "resignation", "stalemate"
+        String result = message.getParam(0);
+        String reason = message.getParam(1);
         String ratingChange = message.getParamCount() > 2 ? message.getParam(2) : "";
 
         String displayText;

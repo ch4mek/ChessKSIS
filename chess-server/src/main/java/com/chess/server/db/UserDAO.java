@@ -4,11 +4,7 @@ import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Data Access Object for user-related database operations.
- * All methods are synchronized on dbManager to prevent concurrent access
- * to the single shared JDBC Connection from multiple ClientHandler threads.
- */
+
 public class UserDAO {
 
     private static final Logger LOGGER = Logger.getLogger(UserDAO.class.getName());
@@ -19,13 +15,7 @@ public class UserDAO {
         this.dbManager = dbManager;
     }
 
-    /**
-     * Creates a new user in the database.
-     *
-     * @param username     the username
-     * @param passwordHash the SHA-256 hash of the password
-     * @return true if created successfully
-     */
+
     public boolean createUser(String username, String passwordHash) {
         synchronized (dbManager) {
             String sql = "INSERT INTO users (username, password_hash) VALUES (?, ?)";
@@ -48,13 +38,7 @@ public class UserDAO {
         }
     }
 
-    /**
-     * Finds a user by username and verifies password.
-     *
-     * @param username     the username
-     * @param passwordHash the SHA-256 hash of the password
-     * @return UserRecord if found and password matches, null otherwise
-     */
+
     public UserRecord findByUsername(String username, String passwordHash) {
         synchronized (dbManager) {
             String sql = "SELECT id, username, password_hash, rating, games_played, wins, losses, draws FROM users WHERE username = ?";
@@ -83,9 +67,7 @@ public class UserDAO {
         }
     }
 
-    /**
-     * Updates a user's rating.
-     */
+
     public void updateRating(int userId, int newRating) {
         synchronized (dbManager) {
             String sql = "UPDATE users SET rating = ? WHERE id = ?";
@@ -99,9 +81,7 @@ public class UserDAO {
         }
     }
 
-    /**
-     * Increments game statistics for a user.
-     */
+
     public void incrementStats(int userId, boolean win, boolean loss, boolean draw) {
         synchronized (dbManager) {
             String sql = "UPDATE users SET games_played = games_played + 1, " +
@@ -118,9 +98,7 @@ public class UserDAO {
         }
     }
 
-    /**
-     * Simple data record for a user.
-     */
+
     public static class UserRecord {
         public final int id;
         public final String username;

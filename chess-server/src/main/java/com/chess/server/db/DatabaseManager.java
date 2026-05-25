@@ -6,9 +6,7 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Manages the MySQL database connection.
- */
+
 public class DatabaseManager {
 
     private static final Logger LOGGER = Logger.getLogger(DatabaseManager.class.getName());
@@ -24,11 +22,7 @@ public class DatabaseManager {
         this.password = password;
     }
 
-    /**
-     * Establishes the database connection.
-     *
-     * @throws SQLException if connection fails
-     */
+
     public synchronized void connect() throws SQLException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -39,14 +33,7 @@ public class DatabaseManager {
         LOGGER.info("Connected to MySQL database: " + url);
     }
 
-    /**
-     * Gets the active connection, reconnecting if necessary.
-     * Synchronized to prevent concurrent access to the single JDBC Connection
-     * from multiple ClientHandler threads.
-     *
-     * @return the database connection
-     * @throws SQLException if connection fails
-     */
+
     public synchronized Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
             connect();
@@ -54,9 +41,7 @@ public class DatabaseManager {
         return connection;
     }
 
-    /**
-     * Closes the database connection.
-     */
+
     public void disconnect() {
         if (connection != null) {
             try {

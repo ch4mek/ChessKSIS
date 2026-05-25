@@ -20,10 +20,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-/**
- * Custom JavaFX widget that renders an interactive chess board.
- * Supports piece selection, move highlighting, and board flipping.
- */
 public class ChessBoardWidget extends GridPane {
 
     private static final Logger LOGGER = Logger.getLogger(ChessBoardWidget.class.getName());
@@ -31,7 +27,6 @@ public class ChessBoardWidget extends GridPane {
     private static final int BOARD_SIZE = 8;
     private static final double SQUARE_SIZE = 70;
 
-    // Colors
     private static final Color LIGHT_SQUARE = Color.rgb(240, 217, 181);
     private static final Color DARK_SQUARE = Color.rgb(181, 136, 99);
     private static final Color SELECTED_COLOR = Color.rgb(130, 151, 105, 0.7);
@@ -43,7 +38,7 @@ public class ChessBoardWidget extends GridPane {
     private final StackPane[][] cells = new StackPane[BOARD_SIZE][BOARD_SIZE];
 
     private Board board;
-    private boolean flipped = false; // If true, black is at the bottom
+    private boolean flipped = false;
     private Position selectedPosition = null;
     private List<Position> legalMovePositions = new ArrayList<>();
     private Position lastMoveFrom = null;
@@ -51,17 +46,7 @@ public class ChessBoardWidget extends GridPane {
 
     private MoveCallback moveCallback;
 
-    /**
-     * Callback interface for when the user makes a move on the board.
-     */
     public interface MoveCallback {
-        /**
-         * Called when a move is attempted.
-         *
-         * @param from           source position
-         * @param to             destination position
-         * @param promotionPiece the piece type to promote to, or null if not a promotion
-         */
         void onMove(Position from, Position to, PieceType promotionPiece);
     }
 
@@ -72,9 +57,6 @@ public class ChessBoardWidget extends GridPane {
         buildBoard();
     }
 
-    /**
-     * Builds the 8x8 grid of squares.
-     */
     private void buildBoard() {
         getChildren().clear();
 
@@ -92,7 +74,6 @@ public class ChessBoardWidget extends GridPane {
                 StackPane cell = new StackPane(square);
                 cells[displayRow][displayCol] = cell;
 
-                // Click handler
                 final int finalBoardRow = boardRow;
                 final int finalBoardCol = boardCol;
                 cell.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -106,33 +87,18 @@ public class ChessBoardWidget extends GridPane {
             }
         }
 
-        // Add rank/file labels
         addRankFileLabels();
     }
 
-    /**
-     * Adds rank (1-8) and file (a-h) labels around the board.
-     */
     private void addRankFileLabels() {
-        // Column constraints and row constraints for labels
-        // For simplicity, we add labels as overlays or skip them
-        // Labels can be added as text nodes in the grid margins
     }
 
-    /**
-     * Sets the board state and redraws.
-     *
-     * @param board the current board state
-     */
     public void setBoard(Board board) {
         this.board = board;
         drawPieces();
         updateHighlights();
     }
 
-    /**
-     * Draws all pieces on the board using Unicode chess symbols.
-     */
     private void drawPieces() {
         if (board == null) return;
 
@@ -142,7 +108,6 @@ public class ChessBoardWidget extends GridPane {
                 int boardCol = flipped ? (7 - displayCol) : displayCol;
 
                 StackPane cell = cells[displayRow][displayCol];
-                // Remove any existing piece (keep the Rectangle background)
                 cell.getChildren().removeIf(node -> node instanceof javafx.scene.text.Text);
 
                 Piece piece = board.getPiece(boardRow, boardCol);
@@ -162,9 +127,6 @@ public class ChessBoardWidget extends GridPane {
         }
     }
 
-    /**
-     * Returns the Unicode chess piece symbol for the given piece.
-     */
     private String getUnicodePiece(Piece piece) {
         if (piece.getColor() == GameColor.WHITE) {
             switch (piece.getType()) {
@@ -188,32 +150,24 @@ public class ChessBoardWidget extends GridPane {
         return "?";
     }
 
-    /**
-     * Handles a click on a board square.
-     */
     private void onSquareClicked(int boardRow, int boardCol) {
         if (board == null) return;
 
         Position clickedPos = new Position(boardRow, boardCol);
 
         if (selectedPosition != null) {
-            // A piece is already selected
             if (clickedPos.equals(selectedPosition)) {
-                // Deselect
                 selectedPosition = null;
                 legalMovePositions.clear();
                 updateHighlights();
                 return;
             }
 
-            // Check if this is a legal move target
             if (legalMovePositions.contains(clickedPos)) {
-                // Make the move
                 if (moveCallback != null) {
                     Piece selectedPiece = board.getPiece(selectedPosition.getRow(), selectedPosition.getCol());
                     PieceType promotionPiece = null;
 
-                    // Detect pawn promotion
                     if (selectedPiece != null && selectedPiece.getType() == PieceType.PAWN) {
                         int promotionRow = (selectedPiece.getColor() == GameColor.WHITE) ? 0 : 7;
                         if (clickedPos.getRow() == promotionRow) {
@@ -229,26 +183,19 @@ public class ChessBoardWidget extends GridPane {
                 return;
             }
 
-            // Clicked on another square — try to select a new piece
             selectedPosition = null;
             legalMovePositions.clear();
         }
 
-        // Try to select a piece at the clicked position
         Piece piece = board.getPiece(boardRow, boardCol);
         if (piece != null) {
             selectedPosition = clickedPos;
-            // Get legal moves for this piece from the board
             legalMovePositions = board.getLegalMoves(boardRow, boardCol);
             updateHighlights();
         }
     }
 
-    /**
-     * Updates the visual highlights on the board.
-     */
     private void updateHighlights() {
-        // Detect check state for current turn
         Position checkKingPos = null;
         if (board != null && board.isInCheck(board.getCurrentTurn())) {
             checkKingPos = board.findKing(board.getCurrentTurn());
@@ -265,26 +212,22 @@ public class ChessBoardWidget extends GridPane {
                 Position pos = new Position(boardRow, boardCol);
                 Color color = baseColor;
 
-                // Highlight last move
                 if (lastMoveFrom != null && pos.equals(lastMoveFrom)) {
                     color = LAST_MOVE_COLOR;
                 } else if (lastMoveTo != null && pos.equals(lastMoveTo)) {
                     color = LAST_MOVE_COLOR;
                 }
 
-                // Highlight selected square
                 if (selectedPosition != null && pos.equals(selectedPosition)) {
                     color = SELECTED_COLOR;
                 }
 
-                // Highlight king in check (red glow)
                 if (checkKingPos != null && pos.equals(checkKingPos)) {
                     color = CHECK_COLOR;
                 }
 
                 squares[displayRow][displayCol].setFill(color);
 
-                // Add legal move indicators (small circles)
                 StackPane cell = cells[displayRow][displayCol];
                 cell.getChildren().removeIf(node -> node instanceof CircleIndicator);
 
@@ -292,10 +235,8 @@ public class ChessBoardWidget extends GridPane {
                     Piece targetPiece = board != null ? board.getPiece(boardRow, boardCol) : null;
                     CircleIndicator indicator;
                     if (targetPiece != null) {
-                        // Capture indicator — ring around the square
                         indicator = new CircleIndicator(SQUARE_SIZE / 2 - 4, true);
                     } else {
-                        // Move indicator — small dot in center
                         indicator = new CircleIndicator(10, false);
                     }
                     cell.getChildren().add(indicator);
@@ -306,9 +247,6 @@ public class ChessBoardWidget extends GridPane {
 
     private static final Color DARK_COLOR = Color.rgb(181, 136, 99);
 
-    /**
-     * Circle indicator for legal moves.
-     */
     private static class CircleIndicator extends javafx.scene.shape.Circle {
         CircleIndicator(double radius, boolean capture) {
             super(radius);
@@ -324,12 +262,6 @@ public class ChessBoardWidget extends GridPane {
         }
     }
 
-    /**
-     * Shows a dialog for the user to choose a promotion piece.
-     *
-     * @param color the color of the promoting pawn (used for dialog title)
-     * @return the chosen piece type, defaults to QUEEN if dialog is dismissed
-     */
     private PieceType showPromotionDialog(GameColor color) {
         List<String> choices = Arrays.asList("Ферзь", "Ладья", "Слон", "Конь");
         javafx.scene.control.ChoiceDialog<String> dialog = new javafx.scene.control.ChoiceDialog<>("Ферзь", choices);
@@ -337,7 +269,6 @@ public class ChessBoardWidget extends GridPane {
         dialog.setHeaderText("Выберите фигуру:");
         dialog.setContentText("Превратить в:");
 
-        // Style the dialog
         dialog.getDialogPane().setStyle(
             "-fx-background-color: #312e2b; " +
             "-fx-text-fill: #f0d9b5;"
@@ -355,28 +286,19 @@ public class ChessBoardWidget extends GridPane {
                 default:       return PieceType.QUEEN;
             }
         }
-        return PieceType.QUEEN; // default if dialog is closed
+        return PieceType.QUEEN;
     }
 
-    /**
-     * Sets the callback for move events.
-     */
     public void setMoveCallback(MoveCallback callback) {
         this.moveCallback = callback;
     }
 
-    /**
-     * Sets the last move for highlighting.
-     */
     public void setLastMove(Position from, Position to) {
         this.lastMoveFrom = from;
         this.lastMoveTo = to;
         updateHighlights();
     }
 
-    /**
-     * Flips the board orientation.
-     */
     public void setFlipped(boolean flipped) {
         if (this.flipped != flipped) {
             this.flipped = flipped;
@@ -388,18 +310,12 @@ public class ChessBoardWidget extends GridPane {
         }
     }
 
-    /**
-     * Clears the current selection.
-     */
     public void clearSelection() {
         selectedPosition = null;
         legalMovePositions.clear();
         updateHighlights();
     }
 
-    /**
-     * @return the square size in pixels
-     */
     public double getSquareSize() {
         return SQUARE_SIZE;
     }

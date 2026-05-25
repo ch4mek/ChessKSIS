@@ -6,10 +6,6 @@ import com.chess.client.net.ServerConnection;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
-/**
- * Entry point for the Chess Client application.
- * Initializes the JavaFX stage, scene navigator, and server connection.
- */
 public class ClientApp extends Application {
 
     private ServerConnection connection;
@@ -20,13 +16,11 @@ public class ClientApp extends Application {
 
         SceneNavigator navigator = new SceneNavigator(primaryStage, 800, 600);
 
-        // Preload all views
         navigator.preloadView(SceneNavigator.LOGIN, "/fxml/login.fxml");
         navigator.preloadView(SceneNavigator.REGISTER, "/fxml/register.fxml");
         navigator.preloadView(SceneNavigator.LOBBY, "/fxml/lobby.fxml");
         navigator.preloadView(SceneNavigator.GAME, "/fxml/game.fxml");
 
-        // Navigate to login screen
         LoginController controller = navigator.navigateToAndGetController(SceneNavigator.LOGIN);
         if (controller != null) {
             controller.setConnection(connection);
@@ -41,7 +35,6 @@ public class ClientApp extends Application {
 
     @Override
     public void stop() {
-        // Clean up connection on application exit
         if (connection != null && connection.isConnected()) {
             connection.disconnect();
         }

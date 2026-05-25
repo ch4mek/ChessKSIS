@@ -3,9 +3,7 @@ package com.chess.server;
 import com.chess.server.config.ServerConfig;
 import com.chess.server.net.ChessServer;
 
-/**
- * Entry point for the Chess Server application.
- */
+
 public class ServerApp {
 
     public static void main(String[] args) {
@@ -17,13 +15,11 @@ public class ServerApp {
         if (args.length > 0) {
             config = ServerConfig.fromFile(args[0]);
         } else {
-            // Try default config file
             config = ServerConfig.fromFile("server.properties");
         }
 
         ChessServer server = new ChessServer(config);
 
-        // Graceful shutdown on Ctrl+C
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("\nShutting down server...");
             server.stop();

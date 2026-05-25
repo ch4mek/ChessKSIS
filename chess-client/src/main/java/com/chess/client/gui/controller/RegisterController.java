@@ -15,9 +15,6 @@ import javafx.scene.control.TextField;
 
 import java.io.IOException;
 
-/**
- * Controller for the registration screen.
- */
 public class RegisterController implements MessageListener {
 
     @FXML private TextField usernameField;
@@ -79,7 +76,6 @@ public class RegisterController implements MessageListener {
         statusLabel.setText("Подключение к серверу...");
         statusLabel.setStyle("-fx-text-fill: #aaaaaa; -fx-font-size: 12px;");
 
-        // Connect in background thread to avoid blocking UI
         new Thread(() -> {
             try {
                 if (!connection.isConnected()) {

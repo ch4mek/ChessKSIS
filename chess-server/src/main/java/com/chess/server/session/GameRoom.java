@@ -9,10 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-/**
- * Represents a game room with two players and a chess board.
- * Manages the game state and validates moves.
- */
+
 public class GameRoom {
 
     private static final Logger LOGGER = Logger.getLogger(GameRoom.class.getName());
@@ -23,7 +20,7 @@ public class GameRoom {
     private Board board;
     private RoomState state;
     private final List<String> moveNotations;
-    private int gameId; // DB game ID, set after saving
+    private int gameId;
 
     public GameRoom(String roomId, PlayerSession host) {
         this.roomId = roomId;
@@ -33,9 +30,7 @@ public class GameRoom {
         this.moveNotations = new ArrayList<>();
     }
 
-    /**
-     * Adds a second player to the room and starts the game.
-     */
+
     public synchronized boolean addPlayer(PlayerSession player) {
         if (state != RoomState.WAITING || blackPlayer != null) {
             return false;
@@ -53,9 +48,6 @@ public class GameRoom {
         return true;
     }
 
-    /**
-     * Attempts to make a move for the given player.
-     */
     public synchronized MoveResult makeMove(PlayerSession player, Move move) {
         if (state != RoomState.PLAYING) {
             return MoveResult.failure("Game is not in progress");
@@ -142,9 +134,7 @@ public class GameRoom {
                 " [" + state + "]}";
     }
 
-    /**
-     * Result of a move attempt.
-     */
+
     public static class MoveResult {
         private final boolean success;
         private final String fen;
