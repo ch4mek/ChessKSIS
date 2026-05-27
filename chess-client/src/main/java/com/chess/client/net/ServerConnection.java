@@ -17,8 +17,8 @@ public class ServerConnection {
     private static final Logger LOGGER = Logger.getLogger(ServerConnection.class.getName());
     private static final int DEFAULT_PORT = 5555;
     private static final int CONNECTION_TIMEOUT = 10000;
-    private static final int PING_INTERVAL_SEC = 15;
-    private static final int PONG_TIMEOUT_MS = 45_000;
+    private static final int PING_INTERVAL_SEC = 120;
+    private static final int PONG_TIMEOUT_MS = 300_000;
 
     private Socket socket;
     private BufferedReader reader;

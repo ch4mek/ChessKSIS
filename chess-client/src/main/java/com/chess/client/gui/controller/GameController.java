@@ -33,7 +33,7 @@ public class GameController implements MessageListener {
     @FXML private Label opponentLabel;
     @FXML private Label playerLabel;
     @FXML private Label colorLabel;
-    @FXML private Label roomIdIdLabel;
+    @FXML private Label roomIdLabel;
     @FXML private Label statusLabel;
     @FXML private ListView<String> moveHistoryList;
     @FXML private Button acceptDrawBtn;
@@ -80,7 +80,7 @@ public class GameController implements MessageListener {
         connection.setListener(this);
 
         colorLabel.setText("Вы играете: " + (myColor == GameColor.WHITE ? "Белыми" : "Чёрными"));
-        roomIdIdLabel.setText("Комната: " + roomId);
+        roomIdLabel.setText("Комната: " + roomId);
 
         if (myColor == GameColor.WHITE) {
             playerLabel.setText("Вы (Белые)");
